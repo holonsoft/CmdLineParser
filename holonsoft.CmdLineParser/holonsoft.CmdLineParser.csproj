@@ -2,14 +2,14 @@
 
   <PropertyGroup>
     <TargetFrameworks>netstandard2.0;netstandard2.1;net4.8;net4.7.2</TargetFrameworks>
-    <Version>1.0.2</Version>
+    <Version>1.0.2.1</Version>
     <Company>holonsoft</Company>
     <Authors>Christian Vogt</Authors>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <Description>Reflection based fast command line parser (arg[] -&gt; POCO)</Description>
-    <Copyright>by Christian Vogt, holonsoft</Copyright>
+    <Copyright>Christian Vogt, holonsoft</Copyright>
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
-    <PackageProjectUrl></PackageProjectUrl>
+    <PackageProjectUrl>https://www.nuget.org/packages/holonsoft.CmdLineParser/</PackageProjectUrl>
     <RepositoryUrl>https://github.com/holonsoft/CmdLineParser</RepositoryUrl>
     <RepositoryType>GIT</RepositoryType>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
@@ -18,6 +18,10 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
     <DefineConstants>TRACE</DefineConstants>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="nuget.config" />
+  </ItemGroup>
 
   <ItemGroup>
     <Folder Include="Properties\" />
