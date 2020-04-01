@@ -3,6 +3,8 @@ Reflection based fast command line parser (arg[] -> POCO)
 
 It's free, opensource and licensed under <a href="https://opensource.org/licenses/Apache-2.0">APACHE 2.0</a> (an OSI approved license).
 
+Supported platforms: net4.7.2, net4.8, netstandard2.0, netstandard2.1
+
 Unit test are done with <a href="https://github.com/xunit/xunit">Xunit</a>, a great testing tool.
 
 This is a small library for parsing command line arguments in a POCO object with the magic of reflection. 
