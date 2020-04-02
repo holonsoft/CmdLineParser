@@ -20,10 +20,13 @@
  *            info@holonsoft.com
  *
  */
-using System;
-using System.Reflection;
 
-namespace holonsoft.DomainModel.CmdLineParser
+using System;
+using System.Globalization;
+using System.Reflection;
+using holonsoft.DomainModel.CmdLineParser;
+
+namespace holonsoft.CmdLineParser.DomainModel
 {
     /// <summary>
     /// Allows control of command line parsing.
@@ -33,6 +36,7 @@ namespace holonsoft.DomainModel.CmdLineParser
     [AttributeUsage(AttributeTargets.Field)]
     public class ArgumentAttribute: Attribute
     {
+        private string _culture;
         public ArgumentTypes ArgumentType { get; private set; }
 
 
@@ -46,16 +50,16 @@ namespace holonsoft.DomainModel.CmdLineParser
         }
 
 
-        public ArgumentAttribute(ArgumentAttribute source, FieldInfo field)
-        {
+        //public ArgumentAttribute(ArgumentAttribute source, FieldInfo field)
+        //{
             
-        }
+        //}
 
 
         /// <summary>
         /// Returns true if the argument did not have an explicit short name specified.
         /// </summary>
-        public bool HasNoDefaultShortName    { get { return null == ShortName; } }
+        public bool HasNoDefaultShortName => null == ShortName;
 
 
         /// <summary>
@@ -66,16 +70,11 @@ namespace holonsoft.DomainModel.CmdLineParser
         /// </summary>
         public string ShortName { get; set; }
 
-        //{
-        //    get { return this.shortName; }
-        //    set { Debug.Assert(value == null || !(this is DefaultArgumentAttribute)); this.shortName = value; }
-        //}
-
         /// <summary>
         /// Returns true if the argument did not have an explicit long name specified.
         /// </summary>
-        public bool HasNoDefaultLongName     { get { return null == LongName; } }
-        
+        public bool HasNoDefaultLongName => null == LongName;
+
         /// <summary>
         /// The long name of the argument.
         /// Set to null means use the default long name.
@@ -83,10 +82,6 @@ namespace holonsoft.DomainModel.CmdLineParser
         /// It is an error to specify a long name of String.Empty.
         /// </summary>
         public string LongName { get; set; }
-        //{
-        //    get { Debug.Assert(!this.DefaultLongName); return this.longName; }
-        //    set { Debug.Assert(value != ""); this.longName = value; }
-        //}
 
         /// <summary>
         /// The default value of the argument.
@@ -96,13 +91,13 @@ namespace holonsoft.DomainModel.CmdLineParser
         /// <summary>
         /// Returns true if the argument has a default value.
         /// </summary>
-        public bool HasDefaultValue     { get { return null != DefaultValue; } }
+        public bool HasDefaultValue => null != DefaultValue;
 
         /// <summary>
         /// Returns true if the argument has help text specified.
         /// </summary>
-        public bool HasHelpText         { get { return null != HelpText; } }
-        
+        public bool HasHelpText => !string.IsNullOrWhiteSpace(HelpText);
+
         /// <summary>
         /// The help text for the argument.
         /// </summary>
@@ -110,8 +105,24 @@ namespace holonsoft.DomainModel.CmdLineParser
 
         /// <summary>
         /// Only for bool values valid. Sets the value to TRUE if option has been detected
-        /// This allows  /install   to be set to true instead of using /install true
+        /// This allows  '/install'   to be set to true instead of using '/install true'
         /// </summary>
         public bool OccurrenceSetsBool { get; set; }
+
+        /// <summary>
+        /// For culture dependent types (numbers and datetime) default culture is invariant
+        /// Set this value to use a different culture for converting values
+        /// </summary>
+        public CultureInfo CultureInfo { get; internal set; }= CultureInfo.InvariantCulture;
+
+        public string Culture
+        {
+            get => _culture;
+            set
+            {
+                _culture = value;
+                CultureInfo = new CultureInfo(_culture);
+            }
+        }
     }
 }

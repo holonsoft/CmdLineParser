@@ -20,13 +20,18 @@
  *            info@holonsoft.com
  *
  */
+using System;
+using holonsoft.CmdLineParser.DomainModel;
 using holonsoft.DomainModel.CmdLineParser;
 
 namespace Test.holonsoft.CmdLineParser.DomainModel
 {
-    public class DummyTestEnumArg
+    public class ArgExample2
     {
-        [DefaultArgument(ArgumentTypes.AtMostOnce, DefaultValue = RenameMode.ZipFiles, HelpText = "default renames zip files")]
-        public RenameMode Mode;
+        [Argument(ArgumentTypes.Required, ShortName = "", HelpText = "Starting number of connections.")]
+        public int StartConnections;
+        
+        [Argument(ArgumentTypes.Required, HelpText = "Maximum number of connections.")]
+        public int MaxConnections;
     }
 }

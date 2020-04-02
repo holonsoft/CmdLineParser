@@ -22,26 +22,14 @@
  */
 using System;
 using holonsoft.CmdLineParser.DomainModel;
+using holonsoft.DomainModel.CmdLineParser;
 
-namespace holonsoft.DomainModel.CmdLineParser
+namespace Test.holonsoft.CmdLineParser.DomainModel
 {
-    /// <summary>
-    /// Indicates that this argument is the default argument.
-    /// '/' or '-' prefix only the argument value is specified.
-    /// The ShortName property should not be set for DefaultArgumentAttribute
-    /// instances. The LongName property is used for usage text only and
-    /// does not affect the usage of the argument.
-    /// </summary>
-    [AttributeUsage(AttributeTargets.Field)]
-    public class DefaultArgumentAttribute : ArgumentAttribute
+    public class CollectionFail
     {
-        /// <summary>
-        /// Indicates that this argument is the default argument.
-        /// </summary>
-        /// <param name="argumentType"> Specifies the error checking to be done on the argument. </param>
-        public DefaultArgumentAttribute(ArgumentTypes argumentType)
-            : base(argumentType)
-        {
-        }
+        [Argument(ArgumentTypes.MultipleUnique, HelpText = "Input files to count.")] 
+        public string[] Files;
+        
     }
 }

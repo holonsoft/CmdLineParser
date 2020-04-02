@@ -22,6 +22,7 @@
  */
 using System;
 using System.Linq;
+using holonsoft.CmdLineParser.DomainModel;
 using holonsoft.DomainModel.CmdLineParser;
 
 namespace holonsoft.CmdLineParser
@@ -31,6 +32,9 @@ namespace holonsoft.CmdLineParser
     {
         private void DetectPossibleArguments()
         {
+            if (_possibleArguments.Count > 0) return;
+            
+
             foreach (var argument in from field in _parsedArgumentPoco.GetType().GetFields()
                                      where !field.IsInitOnly && !field.IsLiteral && !field.IsStatic
                                      let attributes = field.GetCustomAttributes(typeof (ArgumentAttribute), false)
@@ -59,10 +63,5 @@ namespace holonsoft.CmdLineParser
                 }
             }
         }
-
-
- 
-
     }
-
 }

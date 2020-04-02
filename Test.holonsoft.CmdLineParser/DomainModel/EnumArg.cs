@@ -20,20 +20,13 @@
  *            info@holonsoft.com
  *
  */
+using holonsoft.DomainModel.CmdLineParser;
 
-using System;
-
-namespace holonsoft.DomainModel.CmdLineParser
+namespace Test.holonsoft.CmdLineParser.DomainModel
 {
-    [Flags]
-    public enum ParserErrorKinds
+    public class EnumArg
     {
-        None = 0,
-        MissingArgument = 0x01,
-        UnknownArgument = MissingArgument << 1,
-        UnsupportedType = MissingArgument << 2,
-        CollectionValuesAreNotUnique = MissingArgument << 3,
+        [DefaultArgument(ArgumentTypes.AtMostOnce, DefaultValue = RenameMode.ZipFiles, HelpText = "default renames zip files")]
+        public RenameMode Mode;
     }
-
-    public delegate void ErrorReporterDelegate(ParserErrorKinds errorKind, string hint);
 }

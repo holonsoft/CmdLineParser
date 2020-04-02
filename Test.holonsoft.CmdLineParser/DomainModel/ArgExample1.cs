@@ -21,11 +21,12 @@
  *
  */
 using System;
+using holonsoft.CmdLineParser.DomainModel;
 using holonsoft.DomainModel.CmdLineParser;
 
 namespace Test.holonsoft.CmdLineParser.DomainModel
 {
-    public class DummyTestArguments
+    public class ArgExample1
     {
         [Argument(ArgumentTypes.Required, ShortName = "", HelpText = "Starting number of connections.")]
         public int StartConnections;
@@ -70,8 +71,11 @@ namespace Test.holonsoft.CmdLineParser.DomainModel
         [Argument(ArgumentTypes.AtMostOnce, OccurrenceSetsBool = true)]
         public bool FlagWhenFound;
 
-        public string ThisIsNotAnArgumentButShoudNotCreateAnError;
+        // ReSharper disable once UnusedMember.Global
+        public string ThisIsNotAnArgumentButShouldNotCreateAnError;
 
+#pragma warning disable 169
         private bool PrivateDummyField;
+#pragma warning restore 169
     }
 }

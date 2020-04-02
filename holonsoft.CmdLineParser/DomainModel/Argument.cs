@@ -21,13 +21,14 @@
  *
  */
 using System.Reflection;
+using holonsoft.CmdLineParser.DomainModel;
 
 namespace holonsoft.DomainModel.CmdLineParser
 {
     /// <summary>
-    /// Holds informations about field attributes
+    /// Contains information about field attributes
     /// </summary>
-    public class Argument
+    internal class Argument
     {
         public ArgumentAttribute Attribute { get; set; }
         public FieldInfo Field { get; set; }
@@ -35,11 +36,11 @@ namespace holonsoft.DomainModel.CmdLineParser
 
         public string FieldName => Field.Name;
 
-
         public string LongName => Attribute.LongName;
-
         public string ShortName => Attribute.ShortName;
 
         public bool IsCollection => Field.FieldType.IsArray;
+
+        public bool VisitorWasHere { get; set; }
     }
 }
