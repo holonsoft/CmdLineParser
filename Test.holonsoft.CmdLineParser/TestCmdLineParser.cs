@@ -26,7 +26,7 @@ using System.Linq;
 using System.Net;
 using Xunit;
 using holonsoft.CmdLineParser;
-using holonsoft.DomainModel.CmdLineParser;
+using holonsoft.CmdLineParser.DomainModel;
 using Test.holonsoft.CmdLineParser.DomainModel;
 using Xunit.Abstractions;
 

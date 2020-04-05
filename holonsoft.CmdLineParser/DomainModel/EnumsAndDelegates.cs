@@ -23,7 +23,7 @@
 
 using System;
 
-namespace holonsoft.DomainModel.CmdLineParser
+namespace holonsoft.CmdLineParser.DomainModel
 {
     [Flags]
     public enum ParserErrorKinds

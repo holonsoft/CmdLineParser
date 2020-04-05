@@ -20,10 +20,10 @@
  *            info@holonsoft.com
  *
  */
-using System;
-using holonsoft.CmdLineParser.DomainModel;
 
-namespace holonsoft.DomainModel.CmdLineParser
+using System;
+
+namespace holonsoft.CmdLineParser.DomainModel
 {
     /// <summary>
     /// Indicates that this argument is the default argument.

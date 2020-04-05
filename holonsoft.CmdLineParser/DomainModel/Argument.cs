@@ -20,10 +20,10 @@
  *            info@holonsoft.com
  *
  */
-using System.Reflection;
-using holonsoft.CmdLineParser.DomainModel;
 
-namespace holonsoft.DomainModel.CmdLineParser
+using System.Reflection;
+
+namespace holonsoft.CmdLineParser.DomainModel
 {
     /// <summary>
     /// Contains information about field attributes

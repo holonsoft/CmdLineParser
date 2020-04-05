@@ -23,7 +23,6 @@
 using System;
 using System.Linq;
 using holonsoft.CmdLineParser.DomainModel;
-using holonsoft.DomainModel.CmdLineParser;
 
 namespace holonsoft.CmdLineParser
 {

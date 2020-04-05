@@ -24,7 +24,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using holonsoft.DomainModel.CmdLineParser;
+using holonsoft.CmdLineParser.DomainModel;
 
 namespace holonsoft.CmdLineParser
 {
