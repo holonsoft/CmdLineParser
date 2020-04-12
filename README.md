@@ -91,7 +91,7 @@ and your POCO will be filled
 
 Following field types are supported:
 
-public class AllSupportedTypes
+    public class AllSupportedTypes
     {
         [Argument(ArgumentTypes.Required)]
         public Int16 Int16Field;
@@ -156,3 +156,9 @@ public class AllSupportedTypes
     }
 
 Unit test are done with <a href="https://github.com/xunit/xunit">Xunit</a>, a great testing tool.
+
+Addioanl function:
+
+parser.GetHelpTexts() to get an enumeration of all help texts
+
+parser.GetConsoleFormattedHelpTexts() to get a helptext formatted for console output
