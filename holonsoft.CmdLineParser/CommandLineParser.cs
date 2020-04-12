@@ -23,6 +23,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using holonsoft.CmdLineParser.DomainModel;
 
@@ -96,6 +97,67 @@ namespace holonsoft.CmdLineParser
         }
 
 
+        public string GetConsoleFormattedHelpTexts(int consoleWidth)
+        {
+            var sb = new StringBuilder();
+
+            var maxLengthOfFieldName = GetHelpTexts().Select(h => h.FieldName.Length).Concat(new[] { 0 }).Max();
+            maxLengthOfFieldName++;
+
+            var maxLengthOfShortName = GetHelpTexts().Select(h => h.ShortName.Length).Concat(new[] { 0 }).Max();
+            maxLengthOfShortName++;
+
+            var maxHelpTextLength = consoleWidth - maxLengthOfShortName - maxLengthOfFieldName;
+
+
+            foreach (var h in GetHelpTexts())
+            {
+                sb.Append(h.FieldName);
+
+                if (h.FieldName.Length < maxLengthOfFieldName)
+                {
+                    sb.Append(" ".Repeat(maxLengthOfFieldName - h.FieldName.Length));
+                }
+
+                sb.Append(h.ShortName);
+                if (h.ShortName.Length < maxLengthOfShortName)
+                {
+                    sb.Append(" ".Repeat(maxLengthOfShortName - h.ShortName.Length));
+                }
+
+                if (h.HelpText.Length <= maxHelpTextLength)
+                {
+                    sb.AppendLine(h.HelpText);
+                }
+                else
+                {
+                    var charCount = 0;
+                    var lines = h.HelpText.Split(' ')
+                        .GroupBy(w => (charCount += w.Length + 1) / maxHelpTextLength)
+                        .Select(g => string.Join(" ", g));
+
+                    var i = 0;
+                    foreach (var l in lines)
+                    {
+                        if (i > 0)
+                        {
+                            var r = consoleWidth - maxHelpTextLength;
+                            if (r < 0) r = 0;
+
+                            sb.Append(" ".Repeat(r));
+                        }
+
+                        sb.AppendLine(l);
+                        i++;
+                    }
+                }
+            }
+
+            return sb.ToString();
+        }
+
+        
+
         private void CheckForErrors()
         {
             foreach (var kvp in _possibleArguments
@@ -125,6 +187,17 @@ namespace holonsoft.CmdLineParser
         {
             HasErrors = true;
             _errorReporter?.Invoke(errorKind, hint);
+        }
+        
+    }
+
+
+    static class StringExtensions
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static string Repeat(this string self, int count)
+        {
+            return string.Concat(Enumerable.Repeat(self, count));
         }
     }
 }
