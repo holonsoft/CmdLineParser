@@ -157,7 +157,13 @@ Following field types are supported:
 
 Unit test are done with <a href="https://github.com/xunit/xunit">Xunit</a>, a great testing tool.
 
-Addioanl function:
+Please note: If you want to handover negative values or a guid, please quote it with "
+
+example: -128   ->  "-128"
+
+The parser treats - (minus) as start of an option, except it is found inside a quote.
+
+Addional function:
 
 parser.GetHelpTexts() to get an enumeration of all help texts
 
