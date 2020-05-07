@@ -31,8 +31,7 @@ namespace holonsoft.CmdLineParser
     {
         private void DetectPossibleArguments()
         {
-            if (_possibleArguments.Count > 0) return;
-            
+            _possibleArguments.Clear();
 
             foreach (var argument in from field in _parsedArgumentPoco.GetType().GetFields()
                                      where !field.IsInitOnly && !field.IsLiteral && !field.IsStatic

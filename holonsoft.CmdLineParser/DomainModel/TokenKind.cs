@@ -21,20 +21,20 @@
  *
  */
 
-using holonsoft.CmdLineParser.DomainModel;
+using System;
 
-namespace Test.holonsoft.CmdLineParser.DomainModel
+namespace holonsoft.CmdLineParser.DomainModel
 {
-    public class CollectionArgs
+    [Flags]
+    public enum TokenKind
     {
-        // This default is invalid! Only for testing purpose added!
-        [DefaultArgument(ArgumentTypes.MultipleUnique, HelpText = "Input files to count.")] 
-        public string[] Files;
+        Unknown = 0,
+        Done = 1,
 
-        [Argument(ArgumentTypes.AtMostOnce, ShortName = "p", HelpText = "Dummy int array")] 
-        public int[] Priorities;
-
-        [Argument(ArgumentTypes.AtMostOnce, ShortName = "pp", HelpText = "Dummy bool array")]
-        public bool[] ProcessPriorities;
+        ArgStartMarker = Done << 1,
+        Argument = Done << 2,
+        ArgContent = Done << 3,
+        QuotedArgContent = Done << 4,
+        Symbol = Done << 5,
     }
 }

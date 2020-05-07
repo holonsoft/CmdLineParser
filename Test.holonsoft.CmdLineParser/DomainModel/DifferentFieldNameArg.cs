@@ -20,21 +20,18 @@
  *            info@holonsoft.com
  *
  */
-
+using System;
 using holonsoft.CmdLineParser.DomainModel;
 
 namespace Test.holonsoft.CmdLineParser.DomainModel
 {
-    public class CollectionArgs
+    public class DifferentFieldNameArg
     {
-        // This default is invalid! Only for testing purpose added!
-        [DefaultArgument(ArgumentTypes.MultipleUnique, HelpText = "Input files to count.")] 
-        public string[] Files;
+        [Argument(ArgumentTypes.AtMostOnce, LongName = "DefineOutFileNamePlease", ShortName = "ofn", DefaultValue = "default.outfile", HelpText = "help me")]
+        public string OutFileName;
 
-        [Argument(ArgumentTypes.AtMostOnce, ShortName = "p", HelpText = "Dummy int array")] 
-        public int[] Priorities;
-
-        [Argument(ArgumentTypes.AtMostOnce, ShortName = "pp", HelpText = "Dummy bool array")]
-        public bool[] ProcessPriorities;
+#pragma warning disable 169
+        private bool PrivateDummyField;
+#pragma warning restore 169
     }
 }

@@ -33,7 +33,7 @@ namespace holonsoft.CmdLineParser
         where T : class
     {
         private T _parsedArgumentPoco;
-        private string[] _argumentsFromOutside;
+        private string _argumentsFromOutside;
 
         private readonly Dictionary<string, List<string>> _parsedArguments = new Dictionary<string, List<string>>();
 
@@ -54,7 +54,9 @@ namespace holonsoft.CmdLineParser
 
             _errorReporter = errorReporter;
 
-            _argumentsFromOutside = arguments ?? throw new ArgumentNullException("arguments", "Parameter must be provided!");
+            _argumentsFromOutside =  arguments == null
+                                        ? throw new ArgumentNullException("arguments", "Parameter must be provided!")
+                                        : string.Join(" ", arguments);
 
             _parsedArgumentPoco = Activator.CreateInstance<T>();
             DetectPossibleArguments();
@@ -157,7 +159,6 @@ namespace holonsoft.CmdLineParser
         }
 
         
-
         private void CheckForErrors()
         {
             foreach (var kvp in _possibleArguments
@@ -174,6 +175,7 @@ namespace holonsoft.CmdLineParser
             }
         }
 
+
         private void SetDefaultValuesForUnseenFields()
         {
             foreach (var kvp in _possibleArguments
@@ -182,6 +184,7 @@ namespace holonsoft.CmdLineParser
                 kvp.Value.Field.SetValue(_parsedArgumentPoco, kvp.Value.Attribute.DefaultValue);
             }
         }
+
 
         private void ReportError(ParserErrorKinds errorKind, string hint)
         {

@@ -35,17 +35,31 @@ namespace Test.holonsoft.CmdLineParser
     public class TestCmdLineParser
     {
         private readonly ITestOutputHelper _testOutputHelper;
-        private readonly string[] _args1 = new[] { "-s", "--help", "-ka \"was das soll\"" };
-        private readonly string[] _args2 = new[] { "-c", "huhu", "-d", "-ef", "--h", "/?", "-f", "dummy", "-g", "\"Long text with spaces\"", "/t:test", "dd"};
-        private readonly string[] _args3 = new[] { "-StartConnections", "3", "-MaxConnections:5" };
-        private readonly string[] _args4 = new[] { "/Files", "File1", "File2", "File3", "-p", "1", "3", "2", "/pp", "true", "true", "false", "false", "true" };
-        private readonly string[] _args5 = new[] { "/ProgramId:" + Guid.NewGuid()};
-        private readonly string[] _args6 = new[] {"/Mode", "ZipFiles"};
-        private readonly string[] _args7 = new[] { "/Files", "File1", "File1", "File3" };
-        private readonly string[] _args8 = new[] { "/UnKnownOption" };
-        private readonly string[] _args9 = new[] { "/FlagWhenFound"};
+        public static readonly string[] Args1 = new[] {"-s", "--help", "-ka \"was das soll\""};
 
-        private readonly string[] _args99 = new[]
+        public static readonly string[] Args2 = new[]
+            {"-c", "huhu", "-d", "-ef", "--h", "/?", "-f", "dummy", "-g", "\"Long text with spaces\"", "/t:test", "dd"};
+
+        public static readonly string[] Args3 = new[] {"-StartConnections", "3", "-MaxConnections:5"};
+
+        public static readonly string[] Args4 = new[]
+            {"/Files", "File1", "File2", "File3", "-p", "1", "3", "2", "/pp", "true", "true", "false", "false", "true"};
+
+        public static readonly string[] Args5 = new[] {"/ProgramId:" + '"' + Guid.NewGuid() + '"' };
+
+        public static readonly string[] Args6 = new[] {"/Mode", "ZipFiles"};
+        public static readonly string[] Args7 = new[] { "/Files", "File1", "File1", "File3" };
+        public static readonly string[] Args8 = new[] { "/UnKnownOption" };
+        public static readonly string[] Args9 = new[] { "/FlagWhenFound"};
+        public static readonly string[] Args10 = new[] { "/fwf" };
+        public static readonly string[] Args11 = new[] { "-fwf" };
+        public static readonly string[] Args12 = new[] { "--fwf" };
+        public static readonly string[] Args13 = new[] { "-OutFileName Special_Out1.txt" };
+        public static readonly string[] Args14 = new[] { "-DefineOutFileNamePlease Special_Out1.txt" };
+        public static readonly string[] Args15 = new[] { "-ofn Special_Out1.txt" };
+        public static readonly string[] Args16 = new[] { "-NotKnownOption Special_Out1.txt" };
+
+        public static readonly string[] Args99 = new[]
         {
             "-Int16Field", "1",
             "/UInt16Field", "1",
@@ -64,7 +78,7 @@ namespace Test.holonsoft.CmdLineParser
             "/StringField", "\"A long journey\"",
 
             "-BoolField", "true",
-            "/EnumField", RenameMode.BakFiles.ToString(),
+            "/EnumField", Enum.GetName(typeof(RenameMode), RenameMode.BakFiles) ,
 
             "-DateTimeField", DateTime.UtcNow.Date.ToString(CultureInfo.InvariantCulture),
             "/GuidField", Guid.NewGuid().ToString(),
@@ -75,7 +89,7 @@ namespace Test.holonsoft.CmdLineParser
             "/DoubleFieldWithCultureInfo", "3,14159",
 
             "-ByteField:255",
-            "/SByteField:-128"
+            "/SByteField:\"-128\""
         };
 
 
@@ -87,14 +101,14 @@ namespace Test.holonsoft.CmdLineParser
         [Fact]
         public void TestDummyOptions1()
         {
-            var result = new CommandLineParser<ArgExample1>().Parse(_args1);
+            var result = new CommandLineParser<ArgExample1>().Parse(Args1);
         }
 
 
         [Fact]
         public void TestDummyOptions2()
         {
-            var result = new CommandLineParser<ArgExample1>().Parse(_args2);
+            var result = new CommandLineParser<ArgExample1>().Parse(Args2);
         }
 
 
@@ -102,7 +116,7 @@ namespace Test.holonsoft.CmdLineParser
         public void TestOptionsDummyClassSimpleValues()
         {
             var p = new CommandLineParser<ArgExample1>();
-            var result = p.Parse(_args3, (kind, hint) =>
+            var result = p.Parse(Args3, (kind, hint) =>
             {
                 _testOutputHelper.WriteLine("TestOptionsDummyClassSimpleValues::Warn: " + kind + " for " + hint);
             });
@@ -117,7 +131,7 @@ namespace Test.holonsoft.CmdLineParser
         public void TestOptionsDummyClassMultiValues()
         {
             var p = new CommandLineParser<CollectionArgs>();
-            var result = p.Parse(_args4);
+            var result = p.Parse(Args4);
 
             Assert.False(p.HasErrors);
             Assert.True(result.Files.Length == 3);
@@ -131,7 +145,7 @@ namespace Test.holonsoft.CmdLineParser
             var kindOfError = ParserErrorKinds.None;
 
             var p = new CommandLineParser<CollectionFail>();
-            var result = p.Parse(_args7, (kind, hint) =>
+            var result = p.Parse(Args7, (kind, hint) =>
             {
                 kindOfError = kind;
             });
@@ -147,7 +161,7 @@ namespace Test.holonsoft.CmdLineParser
             var kindOfError = ParserErrorKinds.None;
 
             var p = new CommandLineParser<CollectionFail>();
-            var result = p.Parse(_args8, (kind, hint) =>
+            var result = p.Parse(Args8, (kind, hint) =>
             {
                 kindOfError = kind;
             });
@@ -161,7 +175,7 @@ namespace Test.holonsoft.CmdLineParser
         public void TestOptionsDummyClassFlaggedBool()
         {
             var p = new CommandLineParser<FlagArg>();
-            var result = p.Parse(_args9, (kind, hint) =>
+            var result = p.Parse(Args9, (kind, hint) =>
             {
                 _testOutputHelper.WriteLine(kind + ": " + hint);
             });
@@ -174,7 +188,7 @@ namespace Test.holonsoft.CmdLineParser
         public void TestGuidAssignment()
         {
             var p = new CommandLineParser<GuidArg>();
-            var result = p.Parse(_args5, (kind, hint) =>
+            var result = p.Parse(Args5, (kind, hint) =>
             {
                 _testOutputHelper.WriteLine(kind + ": " + hint);
             });
@@ -189,7 +203,7 @@ namespace Test.holonsoft.CmdLineParser
         public void TestEnumArgs()
         {
             var p = new CommandLineParser<EnumArg>();
-            var result = p.Parse(_args6);
+            var result = p.Parse(Args6);
             Assert.False(p.HasErrors);
             Assert.True(result.Mode == RenameMode.ZipFiles);
         }
@@ -199,7 +213,7 @@ namespace Test.holonsoft.CmdLineParser
         public void TestMissingRequiredField()
         {
             var p = new CommandLineParser<ArgExample1>();
-            var result = p.Parse(_args6);
+            var result = p.Parse(Args6);
 
             Assert.True(p.HasErrors);
 
@@ -210,10 +224,12 @@ namespace Test.holonsoft.CmdLineParser
         public void TestAllSupportedTypes()
         {
             var p = new CommandLineParser<AllSupportedTypes>();
-            var result = p.Parse(_args99, (kind, hint) =>
+
+            var result = p.Parse(Args99, (kind, hint) =>
             {
                 _testOutputHelper.WriteLine("TestAllSupportedTypes::Error for " + hint);
             });
+            
             Assert.False(p.HasErrors);
 
             Assert.Equal(1, result.Int16Field);
@@ -230,7 +246,7 @@ namespace Test.holonsoft.CmdLineParser
             Assert.Equal(DateTime.UtcNow.Date, result.DateTimeField);
             Assert.True(result.BoolField);
 
-            Assert.Equal("\"A long journey\"", result.StringField);
+            Assert.Equal("A long journey", result.StringField);
             Assert.Equal('A', result.CharField);
             
             Assert.NotEqual(Guid.Empty, result.GuidField);
@@ -261,6 +277,49 @@ namespace Test.holonsoft.CmdLineParser
         {
             var p = new CommandLineParser<NotSupportedType>();
             Assert.Throws<NotSupportedException>(() => p.Parse(new[] {"/Uri", "NotSupported"}));
+        }
+
+
+        [Fact]
+        public void TestShortNameVersionsForFlags()
+        {
+            var p = new CommandLineParser<FlagArg>();
+
+            var result = p.Parse(Args10);
+            Assert.True(result.FlagWhenFound);
+
+            result = p.Parse(Args11);
+            Assert.True(result.FlagWhenFound);
+
+            result = p.Parse(Args12);
+            Assert.True(result.FlagWhenFound);
+        }
+
+
+        [Fact]
+        public void TestNameVersionsForSameField()
+        {
+            var p = new CommandLineParser<DifferentFieldNameArg>();
+
+
+            var result = p.Parse(Args13);
+            Assert.Equal("Special_Out1.txt", result.OutFileName);
+
+            result = p.Parse(Args14);
+            Assert.Equal("Special_Out1.txt", result.OutFileName);
+
+            result = p.Parse(Args15);
+            Assert.Equal("Special_Out1.txt", result.OutFileName);
+        }
+
+
+        [Fact]
+        public void TestDefaultValueForField()
+        {
+            var p = new CommandLineParser<DifferentFieldNameArg>();
+
+            var result = p.Parse(Args16);
+            Assert.Equal("default.outfile", result.OutFileName);
         }
     }
 }

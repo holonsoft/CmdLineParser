@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFrameworks>netstandard2.0;netstandard2.1;net4.8;net4.7.2</TargetFrameworks>
-    <Version>2.1.1.0</Version>
+    <Version>2.2.1</Version>
     <Company>holonsoft</Company>
     <Authors>Christian Vogt</Authors>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
@@ -14,6 +14,7 @@
     <RepositoryType>GIT</RepositoryType>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
     <PackageTags>#.netstandard2.0 #.netstandard2.1 #net4.7.2 #net4.8 #parser #commandline #cmdline</PackageTags>
+    <PackageReleaseNotes>New tokenizer for better parsing of arguments, some more optimizations</PackageReleaseNotes>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">

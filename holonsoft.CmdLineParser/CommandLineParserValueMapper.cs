@@ -64,20 +64,6 @@ namespace holonsoft.CmdLineParser
                     continue;
                 }
                 
-
-                if (arg.Attribute.HasDefaultValue)
-                {
-                    if (arg.IsCollection)
-                    {
-                        SetCollectionValue(arg, new[] { arg.Attribute.DefaultValue.ToString() });
-                    }
-                    else
-                    {
-                        SetValue(arg, arg.Attribute.DefaultValue.ToString());
-                    }
-                    continue;
-                }
-
                 if (!_possibleArguments.ContainsKey(option))
                 {
                     _errorReporter?.Invoke(ParserErrorKinds.UnknownArgument, option);

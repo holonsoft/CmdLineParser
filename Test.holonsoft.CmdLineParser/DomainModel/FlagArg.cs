@@ -27,7 +27,7 @@ namespace Test.holonsoft.CmdLineParser.DomainModel
 {
     public class FlagArg
     {
-        [Argument(ArgumentTypes.AtMostOnce, OccurrenceSetsBool = true)]
+        [Argument(ArgumentTypes.AtMostOnce, OccurrenceSetsBool = true, ShortName = "fwf")]
         public bool FlagWhenFound;
 
         public string ThisIsNotAnArgumentButShouldNotCreateAnError;

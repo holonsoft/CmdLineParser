@@ -20,74 +20,66 @@
  *            info@holonsoft.com
  *
  */
+
+using System;
 using System.Collections.Generic;
+using System.Linq;
+using holonsoft.CmdLineParser.DomainModel;
 
 namespace holonsoft.CmdLineParser
 {
     public sealed partial class CommandLineParser<T>
         where T : class
     {
+        private string _tokenizedArgumentName = null;
+        private List<string> _tokenizedValueList = new List<string>();
+        
         private void ParseArgumentList()
         {
-            List<string> valueList = null;
-            string argumentName = null;
+            var tokenizer = new StringTokenizer(_argumentsFromOutside);
 
-            foreach (var argument in _argumentsFromOutside)
+            _tokenizedValueList.Clear();
+            _parsedArguments.Clear();
+
+            while (true)
             {
-                switch (argument[0])
+                var token = tokenizer.Next();
+
+                switch (token.Kind)
                 {
-                    case '-':
-                    case '/':
-                        if (argumentName != null)
-                        {
-                            _parsedArguments.Add(argumentName, valueList);
-                            argumentName = null;
-                        }
-
-                        var offset = ((argument.Length > 1) && (argument[1] == '-')) ? 1 : 0;
-
-                        var endIndex = argument.IndexOfAny(new char[] { ':', '+', '-', '"' }, 1 + offset);
-                        
-                        var option = argument.Substring(1 + offset, endIndex == -1 ? argument.Length - 1 - offset: endIndex - 1 - offset);
-                        argumentName = option;
-
-                        string optionArgument = null;
-
-                        if (option.Length + 1 + offset == argument.Length)
-                        {
-                            optionArgument = null;
-                        }
-                        else
-                        if (argument.Length > 1 + option.Length && argument[1 + option.Length] == ':')
-                        {
-                            optionArgument = argument.Substring(option.Length + 2);
-                        }
-                        else
-                        {
-                            optionArgument = argument.Substring(option.Length + 1);
-                        }
-
-                        valueList = new List<string>();
-
-                        if (optionArgument != null)
-                        {
-                            valueList.Add(optionArgument);
-                        }
-                        break;
-                    case '@':
-                        break;
+                    case TokenKind.Unknown:
+                        continue;
+                    case TokenKind.Done:
+                        AddArgument();
+                        return;
+                    case TokenKind.ArgStartMarker:
+                        AddArgument();
+                        continue;
+                    case TokenKind.Argument:
+                        _tokenizedArgumentName = token.Content;
+                        continue;
+                    case TokenKind.ArgContent:
+                        _tokenizedValueList.Add(token.Content);
+                        continue;
+                    case TokenKind.QuotedArgContent:
+                        _tokenizedValueList.Add(token.Content);
+                        continue;
+                    case TokenKind.Symbol:
+                        continue;
                     default:
-                        valueList?.Add(argument);
-                        break;
-                }                                    
-            }
-
-            if (argumentName != null)
-            {
-                _parsedArguments.Add(argumentName, valueList);
+                        throw new ArgumentOutOfRangeException();
+                }
             }
         }
 
-    }
 
+        private void AddArgument()
+        {
+            if (_tokenizedArgumentName == null) return;
+
+            _parsedArguments.Add(_tokenizedArgumentName, _tokenizedValueList.ToList());
+            _tokenizedValueList.Clear();
+            _tokenizedArgumentName = null;
+        }
+    }
 }
