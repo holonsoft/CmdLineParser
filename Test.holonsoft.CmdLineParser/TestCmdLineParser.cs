@@ -35,7 +35,7 @@ namespace Test.holonsoft.CmdLineParser
     public class TestCmdLineParser
     {
         private readonly ITestOutputHelper _testOutputHelper;
-        public static readonly string[] Args1 = new[] {"-s", "--help", "-ka \"was das soll\""};
+        public static readonly string[] Args1 = new[] {"-s", "--help", "-ka", "\"was das soll\""};
 
         public static readonly string[] Args2 = new[]
             {"-c", "huhu", "-d", "-ef", "--h", "/?", "-f", "dummy", "-g", "\"Long text with spaces\"", "/t:test", "dd"};
@@ -45,7 +45,7 @@ namespace Test.holonsoft.CmdLineParser
         public static readonly string[] Args4 = new[]
             {"/Files", "File1", "File2", "File3", "-p", "1", "3", "2", "/pp", "true", "true", "false", "false", "true"};
 
-        public static readonly string[] Args5 = new[] {"/ProgramId:" + '"' + Guid.NewGuid() + '"' };
+        public static readonly string[] Args5 = new[] {"/ProgramId:" + '"' + Guid.NewGuid().ToString() + '"' };
 
         public static readonly string[] Args6 = new[] {"/Mode", "ZipFiles"};
         public static readonly string[] Args7 = new[] { "/Files", "File1", "File1", "File3" };
@@ -54,10 +54,10 @@ namespace Test.holonsoft.CmdLineParser
         public static readonly string[] Args10 = new[] { "/fwf" };
         public static readonly string[] Args11 = new[] { "-fwf" };
         public static readonly string[] Args12 = new[] { "--fwf" };
-        public static readonly string[] Args13 = new[] { "-OutFileName Special_Out1.txt" };
-        public static readonly string[] Args14 = new[] { "-DefineOutFileNamePlease Special_Out1.txt" };
-        public static readonly string[] Args15 = new[] { "-ofn Special_Out1.txt" };
-        public static readonly string[] Args16 = new[] { "-NotKnownOption Special_Out1.txt" };
+        public static readonly string[] Args13 = new[] { "-OutFileName", "Special_Out1.txt" };
+        public static readonly string[] Args14 = new[] { "-DefineOutFileNamePlease", "Special_Out1.txt" };
+        public static readonly string[] Args15 = new[] { "-ofn", "Special_Out1.txt" };
+        public static readonly string[] Args16 = new[] { "-NotKnownOption", "Special_Out1.txt" };
 
         public static readonly string[] Args17 = new[] { "-g", "-d", "\"P:/Dev/Base\"", "-d", "\"P:/Dev/Products\""};
         public static readonly string[] Args18 = new[] { "-g", "-d", "\"P:/Dev/Base\"", "\"P:/Dev/Products\""};
@@ -227,6 +227,7 @@ namespace Test.holonsoft.CmdLineParser
         public void TestAllSupportedTypes()
         {
             var p = new CommandLineParser<AllSupportedTypes>();
+            
 
             var result = p.Parse(Args99, (kind, hint) =>
             {

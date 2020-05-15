@@ -37,18 +37,16 @@ namespace Test.holonsoft.CmdLineParser
         {
             Assert.Throws<ArgumentException>(() => new StringTokenizer(null));
 
-            Assert.Throws<ArgumentException>(() => new StringTokenizer(string.Empty));
+            Assert.Throws<ArgumentException>(() => new StringTokenizer(new[] { string.Empty }));
 
-            Assert.Throws<ArgumentException>(() => new StringTokenizer(""));
-
-            Assert.Throws<ArgumentException>(() => new StringTokenizer(" "));
+            Assert.Throws<ArgumentException>(() => new StringTokenizer(new[] { "" }));
         }
 
 
         [Fact]
         public void TestTokenizer()
         {
-            var tokenizer = new StringTokenizer(string.Join(" ", TestCmdLineParser.Args1) );
+            var tokenizer = new StringTokenizer(TestCmdLineParser.Args1);
 
             var tokenList = new List<Token>();
 
