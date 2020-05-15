@@ -22,6 +22,8 @@
  */
 
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
 using holonsoft.CmdLineParser.DomainModel;
@@ -30,117 +32,79 @@ namespace holonsoft.CmdLineParser
 {
     public class StringTokenizer
     {
-        private readonly string _content;
+        private readonly string[] _content;
         private readonly Token _done = new Token(TokenKind.Done, string.Empty);
-        private readonly StringBuilder _sb = new StringBuilder();
         
         private int _actPosition = -1;
-        private TokenKind _lastTokenKind = TokenKind.Unknown;
 
-        public StringTokenizer(string content)
+        private readonly Stack<Token> _tokens = new Stack<Token>();
+
+        public StringTokenizer(string[] content)
         {
-            _content = content;
-
-            if (string.IsNullOrWhiteSpace(_content))
+            if (content == null || content.Length == 0)
             {
                 throw new ArgumentException("Content must not be null");
             }
+
+            var isOk = content.Aggregate(true, (current, x) => current & !(string.IsNullOrEmpty(x)));
+
+            if (!isOk)
+            {
+                throw new ArgumentException("Content must not be null");
+            }
+
+            _content = content;
         }
 
 
         public Token Next()
         {
+            if (_tokens.Count > 0)
+            {
+                return _tokens.Pop();
+            }
+
             _actPosition++;
 
             if (_actPosition >= _content.Length)
             {
                 return _done;
             }
-
-            var c = _content[_actPosition];
             
-            switch (c)
+            var arg = _content[_actPosition];
+
+            switch (arg[0])
             {
                 case '-':
                 case '/':
-                {
-                    AppendChar();
-
-                    if (LookAhead() == '-')
-                    {
-                        _actPosition++;
-                        AppendChar();
-                    }
-
-                    _lastTokenKind = TokenKind.ArgStartMarker;
-                    return new Token(TokenKind.ArgStartMarker, GetContent());
-                }
-                case ' ':
-                case ':':
-                    _lastTokenKind = TokenKind.Symbol;
-                    return new Token(TokenKind.Symbol, " ");
+                    _tokens.Push(new Token(TokenKind.Argument, GetArgumentWithoutMarker(arg)));
+                    return new Token(TokenKind.ArgStartMarker, String.Empty);
                 default:
-                    return ReadContent();
+                    return new Token(arg[0] == '"'? TokenKind.QuotedArgContent : TokenKind.ArgContent, arg);
             }
         }
 
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private Token ReadContent()
+        private string GetArgumentWithoutMarker(string arg)
         {
-            var c = _content[_actPosition];
-            char expectedSeparator = ' ';
+            if (arg.Length <= 2) return (arg.Substring(1).Trim());
 
-            if (c == '"')
+            var i1 = arg.IndexOf(':');
+            var i2 = arg.IndexOf('"');
+
+            if ((i2 > i1) || (i1 > 0  && i2 < 0))
             {
-                expectedSeparator = c;
-                _actPosition++;
+                var argItself = arg.Substring(0, i1);
+
+                var c = arg.Substring(i1 + 1);
+
+                _tokens.Push(new Token(c[0] == '"'? TokenKind.QuotedArgContent : TokenKind.ArgContent, c));
+
+                return argItself[1] == '-' ? argItself.Substring(2).Trim() : argItself.Substring(1).Trim();
             }
-
-            while (_actPosition < _content.Length)
-            {
-                c = _content[_actPosition];
-                if (c == expectedSeparator || ((c == ':') && (expectedSeparator != '"'))) break;
-
-                AppendChar();
-
-                _actPosition++;
-            }
-
-            if (_lastTokenKind == TokenKind.ArgStartMarker)
-            {
-                _lastTokenKind = TokenKind.Argument;
-                return new Token(TokenKind.Argument, GetContent());
-            }
-
-            return new Token(expectedSeparator == ' '? TokenKind.ArgContent : TokenKind.QuotedArgContent, GetContent());
+            
+            return arg[1] == '-' ? arg.Substring(2).Trim() : arg.Substring(1).Trim();
         }
-
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void AppendChar()
-        {
-            _sb.Append(_content[_actPosition]);
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private string GetContent()
-        {
-            var result = _sb.ToString();
-            _sb.Clear();
-
-            return result;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private char LookAhead()
-        {
-            var pos = _actPosition + 1;
-
-            if (pos == _content.Length) return Char.MinValue;
-
-            return _content[pos];
-        }
-
     }
 }

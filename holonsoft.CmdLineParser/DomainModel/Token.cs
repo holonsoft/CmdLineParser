@@ -28,11 +28,18 @@ namespace holonsoft.CmdLineParser.DomainModel
         public TokenKind Kind { get; }
 
         public string Content { get; }
+        public string ContentUnquoted => UnquoteContent();
 
         public Token(TokenKind kind, string content)
         {
             Kind = kind;
             Content = content;
+        }
+
+
+        private string UnquoteContent()
+        {
+            return Content.Substring(1, Content.Length - 2);
         }
     }
 }

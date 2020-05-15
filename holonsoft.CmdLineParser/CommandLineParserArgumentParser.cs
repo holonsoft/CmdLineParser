@@ -62,7 +62,7 @@ namespace holonsoft.CmdLineParser
                         _tokenizedValueList.Add(token.Content);
                         continue;
                     case TokenKind.QuotedArgContent:
-                        _tokenizedValueList.Add(token.Content);
+                        _tokenizedValueList.Add(token.ContentUnquoted);
                         continue;
                     case TokenKind.Symbol:
                         continue;

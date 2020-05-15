@@ -33,7 +33,10 @@ namespace holonsoft.CmdLineParser
         where T : class
     {
         private T _parsedArgumentPoco;
-        private string _argumentsFromOutside;
+        private string[] _argumentsFromOutside;
+
+        private static readonly string _separatorStr = "|";
+        private static readonly char _separator = _separatorStr[0];
 
         private readonly Dictionary<string, List<string>> _parsedArguments = new Dictionary<string, List<string>>();
 
@@ -54,10 +57,9 @@ namespace holonsoft.CmdLineParser
 
             _errorReporter = errorReporter;
 
-            _argumentsFromOutside =  arguments == null
-                                        ? throw new ArgumentNullException("arguments", "Parameter must be provided!")
-                                        : string.Join(" ", arguments);
+            _argumentsFromOutside = arguments ?? throw new ArgumentNullException(nameof(arguments), "Parameter(s) must be provided!");
 
+            
             _parsedArgumentPoco = Activator.CreateInstance<T>();
             DetectPossibleArguments();
 
