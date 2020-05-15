@@ -59,6 +59,9 @@ namespace Test.holonsoft.CmdLineParser
         public static readonly string[] Args15 = new[] { "-ofn Special_Out1.txt" };
         public static readonly string[] Args16 = new[] { "-NotKnownOption Special_Out1.txt" };
 
+        public static readonly string[] Args17 = new[] { "-g", "-d", "\"P:/Dev/Base\"", "-d", "\"P:/Dev/Products\""};
+        public static readonly string[] Args18 = new[] { "-g", "-d", "\"P:/Dev/Base\"", "\"P:/Dev/Products\""};
+
         public static readonly string[] Args99 = new[]
         {
             "-Int16Field", "1",
@@ -320,6 +323,32 @@ namespace Test.holonsoft.CmdLineParser
 
             var result = p.Parse(Args16);
             Assert.Equal("default.outfile", result.OutFileName);
+        }
+
+
+        [Fact]
+        public void TestCollectionRepeatedOption()
+        {
+            var p = new CommandLineParser<RealPrgArgs>();
+
+            var result = p.Parse(Args17);
+
+            Assert.True(result.Git);
+            Assert.True(result.Nant);
+            Assert.Equal(2, result.RootDirectories.Length);
+        }
+
+
+        [Fact]
+        public void TestCollectionWithOneOption()
+        {
+            var p = new CommandLineParser<RealPrgArgs>();
+
+            var result = p.Parse(Args18);
+
+            Assert.True(result.Git);
+            Assert.True(result.Nant);
+            Assert.Equal(2, result.RootDirectories.Length);
         }
     }
 }

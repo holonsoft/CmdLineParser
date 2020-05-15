@@ -77,7 +77,16 @@ namespace holonsoft.CmdLineParser
         {
             if (_tokenizedArgumentName == null) return;
 
-            _parsedArguments.Add(_tokenizedArgumentName, _tokenizedValueList.ToList());
+
+            if (_parsedArguments.ContainsKey(_tokenizedArgumentName))
+            {
+                _parsedArguments[_tokenizedArgumentName].AddRange(_tokenizedValueList.ToList());
+            }
+            else
+            {
+                _parsedArguments.Add(_tokenizedArgumentName, _tokenizedValueList.ToList());    
+            }
+            
             _tokenizedValueList.Clear();
             _tokenizedArgumentName = null;
         }
