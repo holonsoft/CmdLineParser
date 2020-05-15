@@ -14,7 +14,7 @@
     <RepositoryType>GIT</RepositoryType>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
     <PackageTags>#.netstandard2.0 #.netstandard2.1 #net4.7.2 #net4.8 #parser #commandline #cmdline</PackageTags>
-    <PackageReleaseNotes>Bug: Repeating option for collections failed</PackageReleaseNotes>
+    <PackageReleaseNotes>Bug: Some more issues regarding combined arg:argvalue calls</PackageReleaseNotes>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
