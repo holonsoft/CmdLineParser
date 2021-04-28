@@ -59,8 +59,14 @@ namespace holonsoft.CmdLineParser
 
             _argumentsFromOutside = arguments ?? throw new ArgumentNullException(nameof(arguments), "Parameter(s) must be provided!");
 
-            
+           
             _parsedArgumentPoco = Activator.CreateInstance<T>();
+
+            if (arguments.Length == 0)
+            {
+                return _parsedArgumentPoco;
+            }
+
             DetectPossibleArguments();
 
             ParseArgumentList();

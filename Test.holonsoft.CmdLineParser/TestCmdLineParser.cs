@@ -116,6 +116,14 @@ namespace Test.holonsoft.CmdLineParser
 
 
         [Fact]
+        public void TestDummyOptions3()
+        {
+            var result = new CommandLineParser<ArgExample1>().Parse(new string[0]);
+            Assert.IsType<ArgExample1>(result);
+        }
+
+
+        [Fact]
         public void TestOptionsDummyClassSimpleValues()
         {
             var p = new CommandLineParser<ArgExample1>();
