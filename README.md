@@ -15,7 +15,7 @@ Includes a help text generator, just add help text within attribute and you get 
 
 It's free, opensource and licensed under <a href="https://opensource.org/licenses/Apache-2.0">APACHE 2.0</a> (an OSI approved license).
 
-Supported platforms: net4.7.2, net4.8, netstandard2.0, netstandard2.1
+Supported platforms: net4.7.2, net4.8, netstandard2.0, netstandard2.1, netcore 3.1, net5
 
 This is a small library for parsing command line arguments in a POCO object with the magic of reflection. 
 
