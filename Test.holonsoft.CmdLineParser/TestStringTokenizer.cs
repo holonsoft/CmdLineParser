@@ -26,7 +26,6 @@ using System.Collections.Generic;
 using holonsoft.CmdLineParser;
 using holonsoft.CmdLineParser.DomainModel;
 using Xunit;
-using Xunit.Analyzers;
 
 namespace Test.holonsoft.CmdLineParser
 {

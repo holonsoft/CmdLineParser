@@ -20,7 +20,7 @@
  *            info@holonsoft.com
  *
  */
-using System;
+
 using holonsoft.CmdLineParser.DomainModel;
 
 namespace Test.holonsoft.CmdLineParser.DomainModel
