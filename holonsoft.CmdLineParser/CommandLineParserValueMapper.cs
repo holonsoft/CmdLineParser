@@ -37,7 +37,7 @@ namespace holonsoft.CmdLineParser
         {
             foreach (var option in _possibleArguments.Keys)
             {
-                var arg = (Argument)_possibleArguments[option];
+                var arg = _possibleArguments[option];
 
                 if (arg.Seen)
                 {

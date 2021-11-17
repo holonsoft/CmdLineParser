@@ -1,8 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.0;netstandard2.1;net4.8;net4.7.2;netcoreapp3.1;net5.0</TargetFrameworks>
-    <Version>2.5.1</Version>
+    <TargetFrameworks>netstandard2.0;netstandard2.1;net4.8;net4.7.2;netcoreapp3.1;net5.0;net6.0</TargetFrameworks>
+    <Version>2.6.1</Version>
     <Company>holonsoft</Company>
     <Authors>Christian Vogt</Authors>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
@@ -13,12 +13,23 @@
     <RepositoryUrl>https://github.com/holonsoft/CmdLineParser</RepositoryUrl>
     <RepositoryType>GIT</RepositoryType>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
-    <PackageTags>#.netstandard2.0 #.netstandard2.1 #net4.7.2 #net4.8 #netcore3.1 #net5.0 #parser #commandline #cmdline</PackageTags>
+    <PackageTags>#.netstandard2.0 #.netstandard2.1 #net4.7.2 #net4.8 #netcore3.1 #net5.0 #net6.0 #parser #commandline #cmdline</PackageTags>
     <PackageReleaseNotes>Bug: Some more issues regarding combined arg:argvalue calls</PackageReleaseNotes>
+    <AssemblyVersion>2.6.1</AssemblyVersion>
+    <FileVersion>2.6.1</FileVersion>
+    <IsPublishable>True</IsPublishable>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
     <DefineConstants>TRACE</DefineConstants>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net6.0|AnyCPU'">
+    <WarningLevel>5</WarningLevel>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net6.0|AnyCPU'">
+    <WarningLevel>5</WarningLevel>
   </PropertyGroup>
 
   <ItemGroup>

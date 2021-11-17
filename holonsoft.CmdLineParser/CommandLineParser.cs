@@ -35,9 +35,6 @@ namespace holonsoft.CmdLineParser
         private T _parsedArgumentPoco;
         private string[] _argumentsFromOutside;
 
-        private static readonly string _separatorStr = "|";
-        private static readonly char _separator = _separatorStr[0];
-
         private readonly Dictionary<string, List<string>> _parsedArguments = new Dictionary<string, List<string>>();
 
         private readonly Dictionary<string, Argument> _possibleArguments = new Dictionary<string, Argument>();

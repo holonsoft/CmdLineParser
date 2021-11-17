@@ -32,7 +32,7 @@ namespace holonsoft.CmdLineParser
         where T : class
     {
         private string _tokenizedArgumentName = null;
-        private List<string> _tokenizedValueList = new List<string>();
+        private readonly List<string> _tokenizedValueList = new List<string>();
         
         private void ParseArgumentList()
         {
