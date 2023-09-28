@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFrameworks>net5.0;net6.0;net7.0</TargetFrameworks>
-    <Version>2.7.1</Version>
+    <Version>3.7.1</Version>
     <Company>holonsoft</Company>
     <Authors>Christian Vogt</Authors>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
@@ -15,12 +15,14 @@
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
     <PackageTags>#net5.0 #net6.0 #net7.0 #parser #commandline #cmdline</PackageTags>
     <PackageReleaseNotes>Have fun</PackageReleaseNotes>
-    <AssemblyVersion>2.7.1</AssemblyVersion>
-    <FileVersion>2.7.1</FileVersion>
+    <AssemblyVersion>3.7.1</AssemblyVersion>
+    <FileVersion>3.7.1</FileVersion>
     <IsPublishable>True</IsPublishable>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <LangVersion>preview</LangVersion>
+    <Title>Command Line Parser</Title>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
@@ -47,6 +49,10 @@
     <None Include="..\LICENSE">
       <Pack>True</Pack>
       <PackagePath></PackagePath>
+    </None>
+    <None Include="..\README.md">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
     </None>
   </ItemGroup>
 
