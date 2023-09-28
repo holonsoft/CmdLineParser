@@ -20,7 +20,7 @@
     <IsPublishable>True</IsPublishable>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <LangVersion>preview</LangVersion>
+    <LangVersion>preview</LangVersion>   
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
@@ -36,11 +36,13 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="nuget.config" />
+    <Compile Remove="Properties\**" />
+    <EmbeddedResource Remove="Properties\**" />
+    <None Remove="Properties\**" />
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Properties\" />
+    <None Remove="nuget.config" />
   </ItemGroup>
 
   <ItemGroup>
@@ -48,10 +50,6 @@
       <Pack>True</Pack>
       <PackagePath></PackagePath>
     </None>
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\holonsoft.CmdLineParser.Abstractions\holonsoft.CmdLineParser.Abstractions.csproj" />
   </ItemGroup>
 
 </Project>
