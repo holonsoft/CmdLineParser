@@ -1,6 +1,10 @@
 # CmdLineParser
 Reflection based fast command line parser (arg[] -> POCO)
 
+# New in 3.8.1
+* Support for net8
+* Update of test unit nugets
+
 At a glance:
 Support for
 * uint16|32|64, int16|32|64, decimal, single, double, byte, sbyte 
@@ -15,7 +19,7 @@ Includes a help text generator, just add help text within attribute and you get 
 
 It's free, opensource and licensed under <a href="https://opensource.org/licenses/Apache-2.0">APACHE 2.0</a> (an OSI approved license).
 
-Supported platforms: net5 and later
+Supported platforms: net5 - net8
 
 This is a small library for parsing command line arguments in a POCO object with the magic of reflection. 
 

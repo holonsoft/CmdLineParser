@@ -1,8 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net5.0;net6.0;net7.0</TargetFrameworks>
-    <Version>3.7.1</Version>
+    <TargetFrameworks>net5.0;net6.0;net7.0;net8.0</TargetFrameworks>
+    <Version>3.8.1</Version>
     <Company>holonsoft</Company>
     <Authors>Christian Vogt</Authors>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
@@ -13,10 +13,10 @@
     <RepositoryUrl>https://github.com/holonsoft/CmdLineParser</RepositoryUrl>
     <RepositoryType>GIT</RepositoryType>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
-    <PackageTags>#net5.0 #net6.0 #net7.0 #parser #commandline #cmdline</PackageTags>
+    <PackageTags>#net5.0 #net6.0 #net7.0 #net8.0 #parser #commandline #cmdline</PackageTags>
     <PackageReleaseNotes>Have fun</PackageReleaseNotes>
-    <AssemblyVersion>3.7.1</AssemblyVersion>
-    <FileVersion>3.7.1</FileVersion>
+    <AssemblyVersion>3.8.1</AssemblyVersion>
+    <FileVersion>3.8.1</FileVersion>
     <IsPublishable>True</IsPublishable>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
