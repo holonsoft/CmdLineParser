@@ -8,7 +8,7 @@ public sealed partial class CommandLineParser<T>
    private readonly List<string> _tokenizedValueList = new();
 
    private void ParseArgumentList() {
-      var tokenizer = new StringTokenizer(_argumentsFromOutside ?? new string[] { "-h" });
+      var tokenizer = new StringTokenizer(_argumentsFromOutside ?? ["-h"]);
 
       _tokenizedValueList.Clear();
       _parsedArguments.Clear();

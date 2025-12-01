@@ -1,6 +1,9 @@
 # CmdLineParser
 Reflection based fast command line parser (arg[] -> POCO)
 
+# New in 4.1.1
+* Support for net9 and net10
+
 # New in 3.8.1
 * Support for net8
 * Update of test unit nugets

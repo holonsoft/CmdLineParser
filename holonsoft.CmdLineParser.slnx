@@ -1,0 +1,9 @@
+<Solution>
+  <Project Path="holonsoft.CmdLineParser.Abstractions/holonsoft.CmdLineParser.Abstractions.csproj">
+    <BuildType Project="Release" />
+  </Project>
+  <Project Path="holonsoft.CmdLineParser.Tests/holonsoft.CmdLineParser.Tests.csproj" />
+  <Project Path="holonsoft.CmdLineParser/holonsoft.CmdLineParser.csproj">
+    <BuildType Project="Release" />
+  </Project>
+</Solution>
