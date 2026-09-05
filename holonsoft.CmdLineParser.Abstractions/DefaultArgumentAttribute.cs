@@ -1,18 +1,16 @@
-﻿namespace holonsoft.CmdLineParser.Abstractions;
+namespace holonsoft.CmdLineParser.Abstractions;
 
 /// <summary>
-/// Indicates that this argument is the default argument.
-/// '/' or '-' prefix only the argument value is specified.
-/// The ShortName property should not be set for DefaultArgumentAttribute
-/// instances. The LongName property is used for usage text only and
-/// does not affect the usage of the argument.
+/// Marks the member that receives values given without an argument name, for example file names in
+/// <c>tool -verbose file1 file2</c>. At most one member per type may carry this attribute.
+/// The member can still be addressed by name.
 /// </summary>
-[AttributeUsage(AttributeTargets.Field)]
+[AttributeUsage(AttributeTargets.Field | AttributeTargets.Property, AllowMultiple = false, Inherited = true)]
 public class DefaultArgumentAttribute : ArgumentAttribute {
    /// <summary>
-   /// Indicates that this argument is the default argument.
+   /// Marks the member that receives values given without an argument name.
    /// </summary>
-   /// <param name="argumentType"> Specifies the error checking to be done on the argument. </param>
+   /// <param name="argumentType">Controls how often the argument may occur and which validations are applied.</param>
    public DefaultArgumentAttribute(ArgumentTypes argumentType)
       : base(argumentType) {
    }

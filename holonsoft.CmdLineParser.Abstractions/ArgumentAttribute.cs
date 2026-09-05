@@ -1,86 +1,114 @@
-﻿using System.Globalization;
+using System.Globalization;
 
 namespace holonsoft.CmdLineParser.Abstractions;
 
 /// <summary>
-/// Allows control of command line parsing.
-/// Attach this attribute to instance fields of types used
-/// as the destination of command line argument parsing.
+/// Marks a public field or a public property with a public setter as command line argument.
+/// The member name is always accepted as argument name. <see cref="ShortName"/>, <see cref="LongName"/> and
+/// <see cref="Aliases"/> add further names.
 /// </summary>
-[AttributeUsage(AttributeTargets.Field)]
+[AttributeUsage(AttributeTargets.Field | AttributeTargets.Property, AllowMultiple = false, Inherited = true)]
 public class ArgumentAttribute : Attribute {
-   private string _culture = null!;
-   public ArgumentTypes ArgumentType { get; private set; }
+   private string? _culture;
 
    /// <summary>
-   /// Allows control of command line parsing.
+   /// Marks a member as command line argument.
    /// </summary>
-   /// <param name="argumentType"> Specifies the error checking to be done on the argument. </param>
+   /// <param name="argumentType">Controls how often the argument may occur and which validations are applied.</param>
    public ArgumentAttribute(ArgumentTypes argumentType) => ArgumentType = argumentType;
 
    /// <summary>
-   /// Returns true if the argument did not have an explicit short name specified.
+   /// Controls how often the argument may occur and which validations are applied.
    /// </summary>
-   public bool HasNoDefaultShortName => null == ShortName;
+   public ArgumentTypes ArgumentType { get; }
 
    /// <summary>
-   /// The short name of the argument.
-   /// Set to null means use the default short name if it does not conflict with any other parameter name.
-   /// Set to "" for no short name.
-   /// This property should not be set for DefaultArgumentAttributes.
+   /// Optional short alias, for example <c>v</c> for <c>-v</c>. Empty or null means no short name.
    /// </summary>
-   public string ShortName { get; set; } = null!;
+   public string? ShortName { get; set; }
 
    /// <summary>
-   /// Returns true if the argument did not have an explicit long name specified.
+   /// Returns true if no short name was specified.
    /// </summary>
-   public bool HasNoDefaultLongName => null == LongName;
+   public bool HasNoDefaultShortName => string.IsNullOrEmpty(ShortName);
 
    /// <summary>
-   /// The long name of the argument.
-   /// Set to null means use the default long name.
-   /// The long name for every argument must be unique.
-   /// It is an error to specify a long name of "".
+   /// Optional long alias. Null or empty means no long name. When set it is used as primary name in help output.
    /// </summary>
-   public string LongName { get; set; } = null!;
+   public string? LongName { get; set; }
 
    /// <summary>
-   /// The default value of the argument.
+   /// Returns true if no long name was specified.
    /// </summary>
-   public object DefaultValue { get; set; } = null!;
+   public bool HasNoDefaultLongName => string.IsNullOrEmpty(LongName);
 
    /// <summary>
-   /// Returns true if the argument has a default value.
+   /// Additional names the argument answers to. Every name must be unique within the argument class.
    /// </summary>
-   public bool HasDefaultValue => null != DefaultValue;
+   public string[]? Aliases { get; set; }
 
    /// <summary>
-   /// Returns true if the argument has help text specified.
+   /// Value assigned when the argument is not given. Must fit the member type, or be a string that converts
+   /// to the member type, or a primitive that <see cref="Convert.ChangeType(object, Type)"/> can convert.
+   /// Must not be combined with <see cref="ArgumentTypes.Required"/>.
+   /// </summary>
+   public object? DefaultValue { get; set; }
+
+   /// <summary>
+   /// Returns true if a default value was specified.
+   /// </summary>
+   public bool HasDefaultValue => DefaultValue is not null;
+
+   /// <summary>
+   /// Name of an environment variable that supplies the value when the argument is not given on the command line.
+   /// For collections the variable is split at <see cref="Path.PathSeparator"/>. Takes precedence over <see cref="DefaultValue"/>.
+   /// </summary>
+   public string? EnvironmentVariable { get; set; }
+
+   /// <summary>
+   /// Text shown in help output.
+   /// </summary>
+   public string? HelpText { get; set; }
+
+   /// <summary>
+   /// Returns true if help text was specified.
    /// </summary>
    public bool HasHelpText => !string.IsNullOrWhiteSpace(HelpText);
 
    /// <summary>
-   /// The help text for the argument.
+   /// Excludes the argument from help output and completion scripts. It is still parsed.
    /// </summary>
-   public string HelpText { get; set; } = null!;
+   public bool Hidden { get; set; }
 
    /// <summary>
-   /// Only for bool values valid. Sets the value to TRUE if option has been detected
-   /// This allows  '/install'   to be set to true instead of using '/install true'
+   /// Section name in help output. Arguments without category come first.
+   /// </summary>
+   public string? Category { get; set; }
+
+   /// <summary>
+   /// Name of a group of which at most one argument may be given, for example <c>file</c> and <c>stdin</c> in group <c>input</c>.
+   /// </summary>
+   public string? ExclusiveGroup { get; set; }
+
+   /// <summary>
+   /// Kept for compatibility. Since version 5 every bool argument is set to true when it occurs without a value,
+   /// so <c>-install</c> and <c>-install true</c> are equivalent regardless of this property.
    /// </summary>
    public bool OccurrenceSetsBool { get; set; }
 
    /// <summary>
-   /// For culture dependent types (numbers and datetime) default culture is invariant
-   /// Set this value to use a different culture for converting values
+   /// Culture used to convert numbers and dates for this argument. Null means the parser default (invariant culture).
    /// </summary>
-   public CultureInfo CultureInfo { get; internal set; } = CultureInfo.InvariantCulture;
+   public CultureInfo? CultureInfo { get; private set; }
 
-   public string Culture {
+   /// <summary>
+   /// Culture name used to convert numbers and dates for this argument, for example <c>de-DE</c>.
+   /// </summary>
+   public string? Culture {
       get => _culture;
       set {
          _culture = value;
-         CultureInfo = new CultureInfo(_culture);
+         CultureInfo = string.IsNullOrWhiteSpace(value) ? null : CultureInfo.GetCultureInfo(value);
       }
    }
 }
