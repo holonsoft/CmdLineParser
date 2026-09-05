@@ -1,5 +1,8 @@
 # CmdLineParser
 
+[![CI](https://github.com/holonsoft/CmdLineParser/actions/workflows/ci.yml/badge.svg)](https://github.com/holonsoft/CmdLineParser/actions/workflows/ci.yml)
+[![NuGet](https://img.shields.io/nuget/v/holonsoft.CmdLineParser.svg)](https://www.nuget.org/packages/holonsoft.CmdLineParser/)
+
 Reflection based fast command line parser (`args[]` -> POCO).
 
 Define a class, put attributes on its public fields or properties, call `Parse`. You get a filled object, a list of structured errors and a help text. No builder DSL, no handlers, no ceremony.
