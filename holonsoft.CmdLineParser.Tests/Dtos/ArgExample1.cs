@@ -15,7 +15,7 @@ public class ArgExample1 {
    [Argument(ArgumentTypes.Required, ShortName = "inc", HelpText = "Number of connections to increment, if needed.")]
    public int IncrementOfConnections;
 
-   [DefaultArgument(ArgumentTypes.AtMostOnce, DefaultValue = @"{AppPath}\myconfig.xml", HelpText = "Path with params to config file.")]
+   [Argument(ArgumentTypes.AtMostOnce, DefaultValue = @"{AppPath}\myconfig.xml", HelpText = "Path with params to config file.")]
    public string? Configpath;
 
    [Argument(ArgumentTypes.AtMostOnce, DefaultValue = true, HelpText = "Count number of lines in the input text.")]

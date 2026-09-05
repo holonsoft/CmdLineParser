@@ -1,21 +1,19 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net8.0;net9.0;net10.0</TargetFrameworks>
     <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
     <IsPackable>false</IsPackable>
-    <IsTestProject>true</IsTestProject>
     <IsAotCompatible>false</IsAotCompatible>
     <EnablePackageValidation>false</EnablePackageValidation>
-    <UseMicrosoftTestingPlatformRunner>true</UseMicrosoftTestingPlatformRunner>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="xunit.v3" />
+    <PackageReference Include="BenchmarkDotNet" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\holonsoft.CmdLineParser.Abstractions\holonsoft.CmdLineParser.Abstractions.csproj" />
     <ProjectReference Include="..\holonsoft.CmdLineParser\holonsoft.CmdLineParser.csproj" />
   </ItemGroup>
 
