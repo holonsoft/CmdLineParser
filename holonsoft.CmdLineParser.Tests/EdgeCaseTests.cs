@@ -114,7 +114,7 @@ public class EdgeCaseTests {
    [Theory]
    [InlineData("-Verbose:false", false)]
    [InlineData("-Verbose=yes", true)]
-   [InlineData("/v:0", false)]
+   [InlineData("-v:0", false)]
    public void InlineValueOnBool(string argument, bool expected) {
       var result = Parse(argument);
 

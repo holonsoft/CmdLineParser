@@ -1,5 +1,8 @@
 # CmdLineParser
 
+[![CI](https://github.com/holonsoft/CmdLineParser/actions/workflows/ci.yml/badge.svg)](https://github.com/holonsoft/CmdLineParser/actions/workflows/ci.yml)
+[![NuGet](https://img.shields.io/nuget/v/holonsoft.CmdLineParser.svg)](https://www.nuget.org/packages/holonsoft.CmdLineParser/)
+
 Reflection based fast command line parser (`args[]` -> POCO).
 
 Define a class, put attributes on its public fields or properties, call `Parse`. You get a filled object, a list of structured errors and a help text. No builder DSL, no handlers, no ceremony.
@@ -150,7 +153,7 @@ public class Options : IValidatableArguments {
 
 ## Parsing rules
 
-* `-name`, `--name` and `/name` are equivalent. `/` can be disabled in the options for Unix style tools.
+* `-name` and `--name` are equivalent. `/name` is accepted too when `AllowSlashPrefix` is on. That is the default on Windows only, because absolute paths start with `/` on Unix-like systems.
 * A value can follow as separate token or inline: `-name value`, `-name:value`, `-name=value`. Only the first separator counts, so `-url:http://x` works.
 * Values wrapped in double quotes are unquoted.
 * Negative numbers do not need quotes: `-Value -5`, `-Points -1.5 -.5 2`.
@@ -231,7 +234,7 @@ switch (result.Value) {
 ```csharp
 var options = new CommandLineParserOptions {
    IgnoreCase = true,                       // default false
-   AllowSlashPrefix = false,                // default true
+   AllowSlashPrefix = true,                 // default: true on Windows, false elsewhere
    ValueSeparators = [':', '='],            // default
    RecognizeEndOfOptionsMarker = true,      // default
    AutoHelp = true,                         // default
@@ -275,6 +278,7 @@ Breaking changes in 5.0:
 * Empty `args` applies defaults and checks required arguments.
 * Built-in help names `help`, `h` and `?` are recognized unless your class defines them.
 * `--name=value`, unquoted negative numbers and `@file` response files are recognized. A bare `--` ends the options.
+* `/name` is recognized by default on Windows only. Set `AllowSlashPrefix = true` to keep it on Linux and macOS.
 * `Uri`, `Version`, `FileInfo`, `DirectoryInfo` and many more types are supported. Byte overflow is an error instead of silent truncation.
 * The `Argument` class was removed from the Abstractions package. `ArgumentAttribute` string properties are nullable. Missing required arguments are reported once, not once per alias.
 * `GetHelpTexts()` returns empty strings instead of null for missing parts and sorts case-insensitively.

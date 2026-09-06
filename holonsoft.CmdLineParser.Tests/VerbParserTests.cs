@@ -93,7 +93,7 @@ public class VerbParserTests {
    [InlineData("-h")]
    [InlineData("/?")]
    public void HelpWithoutVerbAsksForTheOverview(string help) {
-      var result = Create().Parse([help]);
+      var result = new VerbParser(new CommandLineParserOptions { AllowSlashPrefix = true }).Add<BuildArgs>().Add<TestArgs>().Parse([help]);
 
       Assert.True(result.HelpRequested);
       Assert.Null(result.Verb);

@@ -121,7 +121,7 @@ public class HelpTests {
    [InlineData("/?")]
    [InlineData("-help")]
    public void BuiltInHelpSuppressesMissingRequiredErrors(string helpArgument) {
-      var result = new CommandLineParser<Args>().ParseArguments([helpArgument]);
+      var result = new CommandLineParser<Args>(new CommandLineParserOptions { AllowSlashPrefix = true }).ParseArguments([helpArgument]);
 
       Assert.True(result.HelpRequested);
       Assert.Empty(result.Errors);

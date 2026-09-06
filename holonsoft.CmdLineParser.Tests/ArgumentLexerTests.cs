@@ -13,9 +13,7 @@ public class ArgumentLexerTests {
    [Theory]
    [InlineData("-name", "name")]
    [InlineData("--name", "name")]
-   [InlineData("/name", "name")]
    [InlineData("-n", "n")]
-   [InlineData("/?", "?")]
    [InlineData("- name ", "name")]
    public void OptionPrefixes(string raw, string expectedName) {
       var token = Create().Classify(raw, afterEndOfOptions: false);
@@ -28,7 +26,6 @@ public class ArgumentLexerTests {
    [Theory]
    [InlineData("-name:value", "name", "value")]
    [InlineData("--name=value", "name", "value")]
-   [InlineData("/name:\"quoted value\"", "name", "quoted value")]
    [InlineData("-url:http://host:8080/x", "url", "http://host:8080/x")]
    [InlineData("-path=C:\\temp", "path", "C:\\temp")]
    [InlineData("-x:a=b", "x", "a=b")]
@@ -82,11 +79,32 @@ public class ArgumentLexerTests {
    }
 
    [Fact]
-   public void SlashPrefixCanBeDisabled() {
-      var token = Create(o => o.AllowSlashPrefix = false).Classify("/etc/passwd", afterEndOfOptions: false);
+   public void SlashPrefixDefaultFollowsTheOperatingSystem() {
+      Assert.Equal(OperatingSystem.IsWindows(), new CommandLineParserOptions().AllowSlashPrefix);
+   }
+
+   [Theory]
+   [InlineData("/name", "name", null)]
+   [InlineData("/?", "?", null)]
+   [InlineData("/name:\"quoted value\"", "name", "quoted value")]
+   [InlineData("/etc/passwd", "etc/passwd", null)]
+   public void SlashPrefixWhenEnabled(string raw, string expectedName, string? expectedValue) {
+      var token = Create(o => o.AllowSlashPrefix = true).Classify(raw, afterEndOfOptions: false);
+
+      Assert.Equal(LexedTokenKind.Option, token.Kind);
+      Assert.Equal(expectedName, token.Name);
+      Assert.Equal(expectedValue, token.Value);
+   }
+
+   [Theory]
+   [InlineData("/name")]
+   [InlineData("/?")]
+   [InlineData("/etc/passwd")]
+   public void SlashPrefixWhenDisabled(string raw) {
+      var token = Create(o => o.AllowSlashPrefix = false).Classify(raw, afterEndOfOptions: false);
 
       Assert.Equal(LexedTokenKind.Value, token.Kind);
-      Assert.Equal("/etc/passwd", token.Value);
+      Assert.Equal(raw, token.Value);
    }
 
    [Fact]
