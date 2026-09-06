@@ -242,8 +242,7 @@ public class ValidationTests {
       var missing = Path.Combine(directory, Guid.NewGuid().ToString("N"));
 
       try {
-         // Absolute paths start with a slash on Unix, which the default options would read as an option prefix.
-         var parser = new CommandLineParser<ExistArgs>(new CommandLineParserOptions { AllowSlashPrefix = false });
+         var parser = new CommandLineParser<ExistArgs>();
 
          Assert.Empty(parser.ParseArguments(["-File", file, "-Directory", directory, "-Any", file]).Errors);
 

@@ -35,6 +35,9 @@ public class FuzzTests {
       var relaxed = new CommandLineParser<HelpTests.Args>(new CommandLineParserOptions { IgnoreCase = true, AllowSlashPrefix = false, ValueSeparators = ['='] });
       yield return args => relaxed.ParseArguments(args);
 
+      var classic = new CommandLineParser<EdgeCaseTests.Args>(new CommandLineParserOptions { AllowSlashPrefix = true });
+      yield return args => classic.ParseArguments(args);
+
       var verbs = new VerbParser().Add<VerbParserTests.BuildArgs>().Add<VerbParserTests.TestArgs>().Add<VerbParserTests.RunArgs>("run", isDefault: true);
       yield return args => verbs.Parse(args);
    }

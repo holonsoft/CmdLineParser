@@ -15,10 +15,11 @@ public sealed class CommandLineParserOptions {
    public bool IgnoreCase { get; set; }
 
    /// <summary>
-   /// Accept '/' as argument prefix in addition to '-' and '--'. Default: <c>true</c>.
-   /// Consider disabling this on Unix-like systems when values may be absolute paths.
+   /// Accept '/' as argument prefix in addition to '-' and '--', as in <c>/name</c> or <c>/?</c>.
+   /// Default: <c>true</c> on Windows, <c>false</c> elsewhere, because absolute paths start with '/' on Unix-like
+   /// systems and would otherwise be read as options. Set it explicitly when the behavior must not depend on the OS.
    /// </summary>
-   public bool AllowSlashPrefix { get; set; } = true;
+   public bool AllowSlashPrefix { get; set; } = OperatingSystem.IsWindows();
 
    /// <summary>
    /// Characters that separate an argument name from an inline value, as in <c>-name:value</c> or <c>--name=value</c>.

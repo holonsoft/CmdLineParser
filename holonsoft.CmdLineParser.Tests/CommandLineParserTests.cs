@@ -11,6 +11,12 @@ namespace holonsoft.CmdLineParser.Tests;
 /// The scenarios of the original test suite, kept as regression guard for the 5.0 rewrite.
 /// </summary>
 public class CommandLineParserTests {
+   /// <summary>
+   /// The original suite mixes '-' and '/' prefixes, so the slash prefix is enabled explicitly. It is off by default on
+   /// Unix-like systems.
+   /// </summary>
+   private static CommandLineParserOptions WithSlashPrefix => new() { AllowSlashPrefix = true };
+
    public static readonly string[] Args1 = ["-s", "--help", "-ka", "\"was das soll\""];
    public static readonly string[] Args2 = ["-c", "huhu", "-d", "-ef", "--h", "/?", "-f", "dummy", "-g", "\"Long text with spaces\"", "/t:test", "dd"];
    public static readonly string[] Args3 = ["-StartConnections", "3", "-MaxConnections:5"];
@@ -56,7 +62,7 @@ public class CommandLineParserTests {
 
    [Fact]
    public void UnknownArgumentsAndHelpDoNotThrow() {
-      var parser = new CommandLineParser<ArgExample1>();
+      var parser = new CommandLineParser<ArgExample1>(WithSlashPrefix);
 
       var result = parser.ParseArguments(Args1);
 
@@ -67,7 +73,7 @@ public class CommandLineParserTests {
 
    [Fact]
    public void GarbageInputProducesOnlyUnknownArgumentErrors() {
-      var parser = new CommandLineParser<ArgExample1>();
+      var parser = new CommandLineParser<ArgExample1>(WithSlashPrefix);
 
       var result = parser.ParseArguments(Args2);
 
@@ -78,7 +84,7 @@ public class CommandLineParserTests {
 
    [Fact]
    public void EmptyArgumentsReturnInstanceWithDefaults() {
-      var parser = new CommandLineParser<ArgExample1>();
+      var parser = new CommandLineParser<ArgExample1>(WithSlashPrefix);
 
       var result = parser.Parse([]);
 
@@ -89,7 +95,7 @@ public class CommandLineParserTests {
 
    [Fact]
    public void SimpleValuesAndDefaults() {
-      var parser = new CommandLineParser<ArgExample1>();
+      var parser = new CommandLineParser<ArgExample1>(WithSlashPrefix);
       var reported = new List<(ParserErrorKinds Kind, string Hint)>();
 
       var result = parser.Parse(Args3, (kind, hint) => reported.Add((kind, hint)));
@@ -107,7 +113,7 @@ public class CommandLineParserTests {
 
    [Fact]
    public void MultiValueCollections() {
-      var parser = new CommandLineParser<CollectionArgs>();
+      var parser = new CommandLineParser<CollectionArgs>(WithSlashPrefix);
 
       var result = parser.Parse(Args4);
 
@@ -119,7 +125,7 @@ public class CommandLineParserTests {
 
    [Fact]
    public void MultipleUniqueCollectionRejectsDuplicates() {
-      var parser = new CommandLineParser<CollectionFail>();
+      var parser = new CommandLineParser<CollectionFail>(WithSlashPrefix);
       var kindOfError = ParserErrorKinds.None;
 
       var result = parser.Parse(Args7, (kind, _) => kindOfError = kind);
@@ -131,7 +137,7 @@ public class CommandLineParserTests {
 
    [Fact]
    public void UnknownOptionIsReported() {
-      var parser = new CommandLineParser<CollectionFail>();
+      var parser = new CommandLineParser<CollectionFail>(WithSlashPrefix);
       var kindOfError = ParserErrorKinds.None;
 
       parser.Parse(Args8, (kind, _) => kindOfError = kind);
@@ -142,7 +148,7 @@ public class CommandLineParserTests {
 
    [Fact]
    public void FlagWithoutValueIsTrue() {
-      var parser = new CommandLineParser<FlagArg>();
+      var parser = new CommandLineParser<FlagArg>(WithSlashPrefix);
 
       var result = parser.Parse(Args9);
 
@@ -152,7 +158,7 @@ public class CommandLineParserTests {
 
    [Fact]
    public void GuidWithInlineQuotedValue() {
-      var parser = new CommandLineParser<GuidArg>();
+      var parser = new CommandLineParser<GuidArg>(WithSlashPrefix);
 
       var result = parser.Parse(Args5);
 
@@ -162,7 +168,7 @@ public class CommandLineParserTests {
 
    [Fact]
    public void EnumByName() {
-      var parser = new CommandLineParser<EnumArg>();
+      var parser = new CommandLineParser<EnumArg>(WithSlashPrefix);
 
       var result = parser.Parse(Args6);
 
@@ -172,7 +178,7 @@ public class CommandLineParserTests {
 
    [Fact]
    public void MissingRequiredFieldsAreReported() {
-      var parser = new CommandLineParser<ArgExample1>();
+      var parser = new CommandLineParser<ArgExample1>(WithSlashPrefix);
 
       parser.Parse(Args6);
 
@@ -183,7 +189,7 @@ public class CommandLineParserTests {
 
    [Fact]
    public void AllSupportedTypes() {
-      var parser = new CommandLineParser<AllSupportedTypes>();
+      var parser = new CommandLineParser<AllSupportedTypes>(WithSlashPrefix);
 
       var result = parser.ParseArguments(Args99);
 
@@ -214,7 +220,7 @@ public class CommandLineParserTests {
 
    [Fact]
    public void HelpTextsListEveryArgument() {
-      var parser = new CommandLineParser<CollectionArgs>();
+      var parser = new CommandLineParser<CollectionArgs>(WithSlashPrefix);
 
       var helpTexts = parser.GetHelpTexts().ToList();
 
@@ -223,14 +229,14 @@ public class CommandLineParserTests {
 
    [Fact]
    public void UnsupportedMemberTypeThrowsOnFirstUse() {
-      var parser = new CommandLineParser<UnsupportedTypeArgs>();
+      var parser = new CommandLineParser<UnsupportedTypeArgs>(WithSlashPrefix);
 
       Assert.Throws<NotSupportedException>(() => parser.Parse(["/Anything", "x"]));
    }
 
    [Fact]
    public void ShortNameWithEveryPrefix() {
-      var parser = new CommandLineParser<FlagArg>();
+      var parser = new CommandLineParser<FlagArg>(WithSlashPrefix);
 
       Assert.True(parser.Parse(Args10).FlagWhenFound);
       Assert.True(parser.Parse(Args11).FlagWhenFound);
@@ -239,7 +245,7 @@ public class CommandLineParserTests {
 
    [Fact]
    public void MemberNameLongNameAndShortNameAddressTheSameField() {
-      var parser = new CommandLineParser<DifferentFieldNameArg>();
+      var parser = new CommandLineParser<DifferentFieldNameArg>(WithSlashPrefix);
 
       Assert.Equal("Special_Out1.txt", parser.Parse(Args13).OutFileName);
       Assert.Equal("Special_Out1.txt", parser.Parse(Args14).OutFileName);
@@ -248,7 +254,7 @@ public class CommandLineParserTests {
 
    [Fact]
    public void DefaultValueAppliesWhenFieldNotGiven() {
-      var parser = new CommandLineParser<DifferentFieldNameArg>();
+      var parser = new CommandLineParser<DifferentFieldNameArg>(WithSlashPrefix);
 
       var result = parser.Parse(Args16);
 
@@ -258,7 +264,7 @@ public class CommandLineParserTests {
 
    [Fact]
    public void RepeatedCollectionOption() {
-      var parser = new CommandLineParser<RealPrgArgs>();
+      var parser = new CommandLineParser<RealPrgArgs>(WithSlashPrefix);
 
       var result = parser.Parse(Args17);
 
@@ -270,7 +276,7 @@ public class CommandLineParserTests {
 
    [Fact]
    public void CollectionWithSingleOptionAndSeveralValues() {
-      var parser = new CommandLineParser<RealPrgArgs>();
+      var parser = new CommandLineParser<RealPrgArgs>(WithSlashPrefix);
 
       var result = parser.Parse(Args18);
 
