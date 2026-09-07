@@ -2,12 +2,11 @@ using System.Text.RegularExpressions;
 using holonsoft.CmdLineParser.Abstractions;
 using holonsoft.CmdLineParser.Abstractions.Enums;
 using holonsoft.CmdLineParser.Abstractions.Validation;
-using Xunit;
 
 namespace holonsoft.CmdLineParser.Tests;
 
-public class ValidationTests {
-   public class RangeArgs {
+public sealed class ValidationTests {
+   public sealed class RangeArgs {
       [Argument(ArgumentTypes.AtMostOnce), ValueRange(1, 10)]
       public int Count;
 
@@ -27,12 +26,12 @@ public class ValidationTests {
       public int Both;
    }
 
-   public class RangeOnString {
+   public sealed class RangeOnString {
       [Argument(ArgumentTypes.AtMostOnce), ValueRange(1, 2)]
       public string? Text;
    }
 
-   public class AllowedArgs {
+   public sealed class AllowedArgs {
       [Argument(ArgumentTypes.AtMostOnce), AllowedValues("red", "green")]
       public string? Color;
 
@@ -49,7 +48,7 @@ public class ValidationTests {
       public long[]? Many;
    }
 
-   public class RegexArgs {
+   public sealed class RegexArgs {
       [Argument(ArgumentTypes.AtMostOnce), RegexPattern("[a-z]+")]
       public string? Name;
 
@@ -57,12 +56,12 @@ public class ValidationTests {
       public string? Loose;
    }
 
-   public class RegexOnInt {
+   public sealed class RegexOnInt {
       [Argument(ArgumentTypes.AtMostOnce), RegexPattern("1")]
       public int Number;
    }
 
-   public class ExistArgs {
+   public sealed class ExistArgs {
       [Argument(ArgumentTypes.AtMostOnce), MustExist(ExistenceKind.File)]
       public string? File;
 
@@ -73,7 +72,7 @@ public class ValidationTests {
       public FileInfo? Any;
    }
 
-   public class CrossField : IValidatableArguments {
+   public sealed class CrossField : IValidatableArguments {
       [Argument(ArgumentTypes.AtMostOnce)]
       public string? File;
 
@@ -105,8 +104,8 @@ public class ValidationTests {
    public void ValueInRangeIsAccepted(string value) {
       var result = new CommandLineParser<RangeArgs>().ParseArguments(["-Count", value]);
 
-      Assert.Empty(result.Errors);
-      Assert.Equal(int.Parse(value), result.Value.Count);
+      result.Errors.ShouldBeEmpty();
+      result.Value.Count.ShouldBe(int.Parse(value));
    }
 
    [Theory]
@@ -116,123 +115,123 @@ public class ValidationTests {
    public void ValueOutOfRangeIsReportedAndNotAssigned(string value) {
       var result = new CommandLineParser<RangeArgs>().ParseArguments(["-Count", value]);
 
-      var error = Assert.Single(result.Errors);
-      Assert.Equal(ParserErrorKinds.ValidationFailed, error.Kind);
-      Assert.Equal("Count", error.ArgumentName);
-      Assert.Equal(value, error.Value);
-      Assert.Contains("1..10", error.Message);
-      Assert.Equal(0, result.Value.Count);
+      var error = result.Errors.ShouldHaveSingleItem();
+      error.Kind.ShouldBe(ParserErrorKinds.ValidationFailed);
+      error.ArgumentName.ShouldBe("Count");
+      error.Value.ShouldBe(value);
+      error.Message.ShouldContain("1..10", Case.Sensitive);
+      result.Value.Count.ShouldBe(0);
    }
 
    [Fact]
    public void DoubleRange() {
       var parser = new CommandLineParser<RangeArgs>();
 
-      Assert.Empty(parser.ParseArguments(["-Ratio", "1.5"]).Errors);
-      Assert.Contains(parser.ParseArguments(["-Ratio", "1.51"]).Errors, e => e.Kind == ParserErrorKinds.ValidationFailed);
+      parser.ParseArguments(["-Ratio", "1.5"]).Errors.ShouldBeEmpty();
+      parser.ParseArguments(["-Ratio", "1.51"]).Errors.ShouldContain(e => e.Kind == ParserErrorKinds.ValidationFailed);
    }
 
    [Fact]
    public void CollectionElementsAreValidatedIndividually() {
       var result = new CommandLineParser<RangeArgs>().ParseArguments(["-Levels", "1", "4", "2", "9"]);
 
-      Assert.Equal(2, result.Errors.Count);
-      Assert.All(result.Errors, e => Assert.Equal(ParserErrorKinds.ValidationFailed, e.Kind));
-      Assert.Equal(["4", "9"], result.Errors.Select(e => e.Value));
-      Assert.Null(result.Value.Levels);
+      result.Errors.Count.ShouldBe(2);
+      result.Errors.ShouldAllBe(e => e.Kind == ParserErrorKinds.ValidationFailed);
+      result.Errors.Select(e => e.Value).ShouldBe(["4", "9"]);
+      result.Value.Levels.ShouldBeNull();
    }
 
    [Fact]
    public void CustomMessageWithPlaceholders() {
       var result = new CommandLineParser<RangeArgs>().ParseArguments(["-Custom", "7"]);
 
-      var error = Assert.Single(result.Errors);
-      Assert.Equal("Custom must be 1..5, not 7", error.Message);
+      var error = result.Errors.ShouldHaveSingleItem();
+      error.Message.ShouldBe("Custom must be 1..5, not 7");
    }
 
    [Fact]
    public void DefaultValuesAreNotValidated() {
       var result = new CommandLineParser<RangeArgs>().ParseArguments([]);
 
-      Assert.Empty(result.Errors);
-      Assert.Equal(99, result.Value.WithDefault);
+      result.Errors.ShouldBeEmpty();
+      result.Value.WithDefault.ShouldBe(99);
    }
 
    [Fact]
    public void SeveralValidatorsReportSeparately() {
       var result = new CommandLineParser<RangeArgs>().ParseArguments(["-Both", "11"]);
 
-      Assert.Equal(2, result.Errors.Count);
-      Assert.All(result.Errors, e => Assert.Equal(ParserErrorKinds.ValidationFailed, e.Kind));
+      result.Errors.Count.ShouldBe(2);
+      result.Errors.ShouldAllBe(e => e.Kind == ParserErrorKinds.ValidationFailed);
    }
 
    [Fact]
    public void RangeOnUnsupportedTypeIsAProgrammingError() {
-      var exception = Assert.Throws<InvalidOperationException>(() => new CommandLineParser<RangeOnString>().Parse([]));
+      var exception = Should.Throw<InvalidOperationException>(() => new CommandLineParser<RangeOnString>().Parse([]));
 
-      Assert.Contains("ValueRangeAttribute", exception.Message);
-      Assert.Contains("Text", exception.Message);
+      exception.Message.ShouldContain("ValueRangeAttribute", Case.Sensitive);
+      exception.Message.ShouldContain("Text", Case.Sensitive);
    }
 
    [Fact]
    public void AllowedStrings() {
       var parser = new CommandLineParser<AllowedArgs>();
 
-      Assert.Empty(parser.ParseArguments(["-Color", "red"]).Errors);
+      parser.ParseArguments(["-Color", "red"]).Errors.ShouldBeEmpty();
 
-      var error = Assert.Single(parser.ParseArguments(["-Color", "blue"]).Errors);
-      Assert.Equal(ParserErrorKinds.ValidationFailed, error.Kind);
-      Assert.Contains("red, green", error.Message);
+      var error = parser.ParseArguments(["-Color", "blue"]).Errors.ShouldHaveSingleItem();
+      error.Kind.ShouldBe(ParserErrorKinds.ValidationFailed);
+      error.Message.ShouldContain("red, green", Case.Sensitive);
    }
 
    [Fact]
    public void AllowedStringsIgnoreCaseOnRequest() {
       var parser = new CommandLineParser<AllowedArgs>();
 
-      Assert.Empty(parser.ParseArguments(["-Loose", "red"]).Errors);
-      Assert.Single(parser.ParseArguments(["-Color", "RED"]).Errors);
+      parser.ParseArguments(["-Loose", "red"]).Errors.ShouldBeEmpty();
+      parser.ParseArguments(["-Color", "RED"]).Errors.ShouldHaveSingleItem();
    }
 
    [Fact]
    public void AllowedNumbers() {
       var parser = new CommandLineParser<AllowedArgs>();
 
-      Assert.Empty(parser.ParseArguments(["-Level", "2"]).Errors);
-      Assert.Single(parser.ParseArguments(["-Level", "4"]).Errors);
-      Assert.Empty(parser.ParseArguments(["-Many", "1", "2"]).Errors);
-      Assert.Single(parser.ParseArguments(["-Many", "3"]).Errors);
+      parser.ParseArguments(["-Level", "2"]).Errors.ShouldBeEmpty();
+      parser.ParseArguments(["-Level", "4"]).Errors.ShouldHaveSingleItem();
+      parser.ParseArguments(["-Many", "1", "2"]).Errors.ShouldBeEmpty();
+      parser.ParseArguments(["-Many", "3"]).Errors.ShouldHaveSingleItem();
    }
 
    [Fact]
    public void AllowedEnumConstantsAndNames() {
       var parser = new CommandLineParser<AllowedArgs>();
 
-      Assert.Empty(parser.ParseArguments(["-Mode", "One"]).Errors);
-      Assert.Empty(parser.ParseArguments(["-Mode", "Two"]).Errors);
-      Assert.Single(parser.ParseArguments(["-Mode", "Zero"]).Errors);
+      parser.ParseArguments(["-Mode", "One"]).Errors.ShouldBeEmpty();
+      parser.ParseArguments(["-Mode", "Two"]).Errors.ShouldBeEmpty();
+      parser.ParseArguments(["-Mode", "Zero"]).Errors.ShouldHaveSingleItem();
    }
 
    [Fact]
    public void RegexMustMatchWholeValue() {
       var parser = new CommandLineParser<RegexArgs>();
 
-      Assert.Empty(parser.ParseArguments(["-Name", "abc"]).Errors);
+      parser.ParseArguments(["-Name", "abc"]).Errors.ShouldBeEmpty();
 
-      var error = Assert.Single(parser.ParseArguments(["-Name", "abc1"]).Errors);
-      Assert.Equal(ParserErrorKinds.ValidationFailed, error.Kind);
-      Assert.Contains("[a-z]+", error.Message);
+      var error = parser.ParseArguments(["-Name", "abc1"]).Errors.ShouldHaveSingleItem();
+      error.Kind.ShouldBe(ParserErrorKinds.ValidationFailed);
+      error.Message.ShouldContain("[a-z]+", Case.Sensitive);
    }
 
    [Fact]
    public void RegexOptionsApply() {
       var parser = new CommandLineParser<RegexArgs>();
 
-      Assert.Empty(parser.ParseArguments(["-Loose", "AB"]).Errors);
+      parser.ParseArguments(["-Loose", "AB"]).Errors.ShouldBeEmpty();
    }
 
    [Fact]
    public void RegexOnNonStringIsAProgrammingError() {
-      Assert.Throws<InvalidOperationException>(() => new CommandLineParser<RegexOnInt>().Parse([]));
+      Should.Throw<InvalidOperationException>(() => new CommandLineParser<RegexOnInt>().Parse([]));
    }
 
    [Fact]
@@ -244,16 +243,16 @@ public class ValidationTests {
       try {
          var parser = new CommandLineParser<ExistArgs>();
 
-         Assert.Empty(parser.ParseArguments(["-File", file, "-Directory", directory, "-Any", file]).Errors);
+         parser.ParseArguments(["-File", file, "-Directory", directory, "-Any", file]).Errors.ShouldBeEmpty();
 
-         var error = Assert.Single(parser.ParseArguments(["-File", missing]).Errors);
-         Assert.Equal(ParserErrorKinds.ValidationFailed, error.Kind);
-         Assert.Contains("does not exist", error.Message);
-         Assert.Null(parser.ParseArguments(["-File", missing]).Value.File);
+         var error = parser.ParseArguments(["-File", missing]).Errors.ShouldHaveSingleItem();
+         error.Kind.ShouldBe(ParserErrorKinds.ValidationFailed);
+         error.Message.ShouldContain("does not exist", Case.Sensitive);
+         parser.ParseArguments(["-File", missing]).Value.File.ShouldBeNull();
 
-         Assert.Single(parser.ParseArguments(["-File", directory]).Errors);
-         Assert.Single(parser.ParseArguments(["-Directory", file]).Errors);
-         Assert.Single(parser.ParseArguments(["-Any", missing]).Errors);
+         parser.ParseArguments(["-File", directory]).Errors.ShouldHaveSingleItem();
+         parser.ParseArguments(["-Directory", file]).Errors.ShouldHaveSingleItem();
+         parser.ParseArguments(["-Any", missing]).Errors.ShouldHaveSingleItem();
       } finally {
          File.Delete(file);
       }
@@ -263,26 +262,26 @@ public class ValidationTests {
    public void ObjectValidationRunsWhenEverythingElseIsFine() {
       var result = new CommandLineParser<CrossField>().ParseArguments(["-Count", "1"]);
 
-      var error = Assert.Single(result.Errors);
-      Assert.Equal(ParserErrorKinds.ValidationFailed, error.Kind);
-      Assert.Equal(string.Empty, error.ArgumentName);
-      Assert.Equal("Either --File or --Stdin is required.", error.Message);
-      Assert.Equal(1, result.Value.ValidateCalls);
+      var error = result.Errors.ShouldHaveSingleItem();
+      error.Kind.ShouldBe(ParserErrorKinds.ValidationFailed);
+      error.ArgumentName.ShouldBe(string.Empty);
+      error.Message.ShouldBe("Either --File or --Stdin is required.");
+      result.Value.ValidateCalls.ShouldBe(1);
    }
 
    [Fact]
    public void ObjectValidationCanReportSeveralProblems() {
       var result = new CommandLineParser<CrossField>().ParseArguments(["-Count", "-1"]);
 
-      Assert.Equal(2, result.Errors.Count);
+      result.Errors.Count.ShouldBe(2);
    }
 
    [Fact]
    public void ObjectValidationPasses() {
       var result = new CommandLineParser<CrossField>().ParseArguments(["-Stdin"]);
 
-      Assert.Empty(result.Errors);
-      Assert.True(result.IsSuccess);
+      result.Errors.ShouldBeEmpty();
+      result.IsSuccess.ShouldBeTrue();
    }
 
    [Fact]
@@ -290,13 +289,13 @@ public class ValidationTests {
       var parser = new CommandLineParser<CrossField>();
 
       var failed = parser.ParseArguments(["-Count", "x"]);
-      Assert.Single(failed.Errors);
-      Assert.Equal(ParserErrorKinds.InvalidValue, failed.Errors[0].Kind);
-      Assert.Equal(0, failed.Value.ValidateCalls);
+      failed.Errors.ShouldHaveSingleItem();
+      failed.Errors[0].Kind.ShouldBe(ParserErrorKinds.InvalidValue);
+      failed.Value.ValidateCalls.ShouldBe(0);
 
       var help = parser.ParseArguments(["--help"]);
-      Assert.Empty(help.Errors);
-      Assert.Equal(0, help.Value.ValidateCalls);
+      help.Errors.ShouldBeEmpty();
+      help.Value.ValidateCalls.ShouldBe(0);
    }
 
    [Fact]
@@ -305,6 +304,6 @@ public class ValidationTests {
 
       new CommandLineParser<RangeArgs>().Parse(["-Count", "0"], (kind, _) => kinds.Add(kind));
 
-      Assert.Equal([ParserErrorKinds.ValidationFailed], kinds);
+      kinds.ShouldBe([ParserErrorKinds.ValidationFailed]);
    }
 }

@@ -1,5 +1,10 @@
 <Project>
 
+  <PropertyGroup Label="Target frameworks">
+    <!-- Shared list for the libraries and their tests. Projects with other needs (e.g. an analyzer on netstandard2.0, the net10-only benchmarks) set their own. -->
+    <LibraryTargetFrameworks>net8.0;net9.0;net10.0</LibraryTargetFrameworks>
+  </PropertyGroup>
+
   <PropertyGroup Label="Compiler">
     <LangVersion>latest</LangVersion>
     <Nullable>enable</Nullable>

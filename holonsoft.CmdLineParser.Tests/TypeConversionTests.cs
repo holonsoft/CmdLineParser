@@ -3,11 +3,10 @@ using System.Net;
 using System.Numerics;
 using holonsoft.CmdLineParser.Abstractions;
 using holonsoft.CmdLineParser.Abstractions.Enums;
-using Xunit;
 
 namespace holonsoft.CmdLineParser.Tests;
 
-public class TypeConversionTests {
+public sealed class TypeConversionTests {
    public enum ByteEnum : byte {
       Zero = 0,
       One = 1,
@@ -42,7 +41,7 @@ public class TypeConversionTests {
       public string Name { get; init; } = "";
    }
 
-   public class ModernTypes {
+   public sealed class ModernTypes {
       [Argument(ArgumentTypes.AtMostOnce)]
       public DateOnly Date;
 
@@ -80,7 +79,7 @@ public class TypeConversionTests {
       public BigInteger Huge;
    }
 
-   public class NullableTypes {
+   public sealed class NullableTypes {
       [Argument(ArgumentTypes.AtMostOnce)]
       public int? Number;
 
@@ -94,7 +93,7 @@ public class TypeConversionTests {
       public int?[]? Numbers;
    }
 
-   public class EnumTypes {
+   public sealed class EnumTypes {
       [Argument(ArgumentTypes.AtMostOnce)]
       public ByteEnum Byte;
 
@@ -105,7 +104,7 @@ public class TypeConversionTests {
       public ByteEnum[]? Many;
    }
 
-   public class BoolArgs {
+   public sealed class BoolArgs {
       [Argument(ArgumentTypes.AtMostOnce, ShortName = "f")]
       public bool Flag;
 
@@ -116,7 +115,7 @@ public class TypeConversionTests {
       public string[]? Files;
    }
 
-   public class CultureArgs {
+   public sealed class CultureArgs {
       [Argument(ArgumentTypes.AtMostOnce, Culture = "de-DE")]
       public double[]? German;
 
@@ -127,7 +126,7 @@ public class TypeConversionTests {
       public DateTime[]? Dates;
    }
 
-   public class NegativeArgs {
+   public sealed class NegativeArgs {
       [Argument(ArgumentTypes.AtMostOnce, ShortName = "v")]
       public int Value;
 
@@ -135,7 +134,7 @@ public class TypeConversionTests {
       public double[]? Points;
    }
 
-   public class CustomTypes {
+   public sealed class CustomTypes {
       [Argument(ArgumentTypes.AtMostOnce)]
       public Point? Point;
 
@@ -143,7 +142,7 @@ public class TypeConversionTests {
       public Money? Price;
    }
 
-   public class ConverterArgs {
+   public sealed class ConverterArgs {
       [Argument(ArgumentTypes.AtMostOnce)]
       public Color? Color;
 
@@ -154,12 +153,12 @@ public class TypeConversionTests {
       public int Number;
    }
 
-   public class IntOnlyArgs {
+   public sealed class IntOnlyArgs {
       [Argument(ArgumentTypes.AtMostOnce)]
       public int Number;
    }
 
-   public class DefaultValueArgs {
+   public sealed class DefaultValueArgs {
       [Argument(ArgumentTypes.AtMostOnce, DefaultValue = "2020-01-02")]
       public DateTime Date;
 
@@ -176,7 +175,7 @@ public class TypeConversionTests {
       public string[]? Names;
    }
 
-   public class BadDefaultArgs {
+   public sealed class BadDefaultArgs {
       [Argument(ArgumentTypes.AtMostOnce, DefaultValue = "not a number")]
       public int Number;
    }
@@ -198,82 +197,82 @@ public class TypeConversionTests {
          "-Huge", "123456789012345678901234567890",
       ]);
 
-      Assert.Empty(result.Errors);
+      result.Errors.ShouldBeEmpty();
       var v = result.Value;
-      Assert.Equal(new DateOnly(2024, 2, 29), v.Date);
-      Assert.Equal(new TimeOnly(13, 45), v.Time);
-      Assert.Equal(TimeSpan.FromMinutes(90), v.Duration);
-      Assert.Equal(new DateTimeOffset(2024, 2, 29, 13, 45, 0, TimeSpan.FromHours(2)), v.Stamp);
-      Assert.Equal(new Uri("https://example.org/x?y=1"), v.Url);
-      Assert.Equal(new Version(1, 2, 3, 4), v.Version);
-      Assert.Equal("b.txt", v.File!.Name);
-      Assert.Equal("b", v.Directory!.Name);
-      Assert.Equal(new IPEndPoint(IPAddress.Loopback, 8080), v.EndPoint);
-      Assert.Equal(Int128.MaxValue, v.Big);
-      Assert.Equal((Half) 1.5, v.Small);
-      Assert.Equal(BigInteger.Parse("123456789012345678901234567890", CultureInfo.InvariantCulture), v.Huge);
+      v.Date.ShouldBe(new DateOnly(2024, 2, 29));
+      v.Time.ShouldBe(new TimeOnly(13, 45));
+      v.Duration.ShouldBe(TimeSpan.FromMinutes(90));
+      v.Stamp.ShouldBe(new DateTimeOffset(2024, 2, 29, 13, 45, 0, TimeSpan.FromHours(2)));
+      v.Url.ShouldBe(new Uri("https://example.org/x?y=1"));
+      v.Version.ShouldBe(new Version(1, 2, 3, 4));
+      v.File!.Name.ShouldBe("b.txt");
+      v.Directory!.Name.ShouldBe("b");
+      v.EndPoint.ShouldBe(new IPEndPoint(IPAddress.Loopback, 8080));
+      v.Big.ShouldBe(Int128.MaxValue);
+      v.Small.ShouldBe((Half) 1.5);
+      v.Huge.ShouldBe(BigInteger.Parse("123456789012345678901234567890", CultureInfo.InvariantCulture));
    }
 
    [Fact]
    public void NullableValueTypes() {
       var result = new CommandLineParser<NullableTypes>().ParseArguments(["-Number", "5", "-Id", "6f9619ff-8b86-d011-b42d-00c04fc964ff", "-Flag", "-Numbers", "1", "2"]);
 
-      Assert.Empty(result.Errors);
-      Assert.Equal(5, result.Value.Number);
-      Assert.Equal(Guid.Parse("6f9619ff-8b86-d011-b42d-00c04fc964ff"), result.Value.Id);
-      Assert.True(result.Value.Flag);
-      Assert.Equal(new int?[] { 1, 2 }, result.Value.Numbers);
+      result.Errors.ShouldBeEmpty();
+      result.Value.Number.ShouldBe(5);
+      result.Value.Id.ShouldBe(Guid.Parse("6f9619ff-8b86-d011-b42d-00c04fc964ff"));
+      result.Value.Flag.ShouldBe(true);
+      result.Value.Numbers.ShouldBe(new int?[] { 1, 2 });
    }
 
    [Fact]
    public void NullableStaysNullWhenNotGiven() {
       var result = new CommandLineParser<NullableTypes>().ParseArguments([]);
 
-      Assert.Empty(result.Errors);
-      Assert.Null(result.Value.Number);
-      Assert.Null(result.Value.Id);
-      Assert.Null(result.Value.Flag);
+      result.Errors.ShouldBeEmpty();
+      result.Value.Number.ShouldBeNull();
+      result.Value.Id.ShouldBeNull();
+      result.Value.Flag.ShouldBeNull();
    }
 
    [Fact]
    public void EnumWithNonIntUnderlyingType() {
       var result = new CommandLineParser<EnumTypes>().ParseArguments(["-Byte", "Two"]);
 
-      Assert.Empty(result.Errors);
-      Assert.Equal(ByteEnum.Two, result.Value.Byte);
+      result.Errors.ShouldBeEmpty();
+      result.Value.Byte.ShouldBe(ByteEnum.Two);
    }
 
    [Fact]
    public void EnumIsCaseInsensitiveAndAcceptsNumbers() {
       var parser = new CommandLineParser<EnumTypes>();
 
-      Assert.Equal(ByteEnum.One, parser.Parse(["-Byte", "one"]).Byte);
-      Assert.Equal(ByteEnum.Two, parser.Parse(["-Byte", "2"]).Byte);
-      Assert.False(parser.HasErrors);
+      parser.Parse(["-Byte", "one"]).Byte.ShouldBe(ByteEnum.One);
+      parser.Parse(["-Byte", "2"]).Byte.ShouldBe(ByteEnum.Two);
+      parser.HasErrors.ShouldBeFalse();
    }
 
    [Fact]
    public void FlagsEnumAcceptsCommaSeparatedNames() {
       var result = new CommandLineParser<EnumTypes>().ParseArguments(["-Flags", "A, B"]);
 
-      Assert.Empty(result.Errors);
-      Assert.Equal(Options.A | Options.B, result.Value.Flags);
+      result.Errors.ShouldBeEmpty();
+      result.Value.Flags.ShouldBe(Options.A | Options.B);
    }
 
    [Fact]
    public void EnumArray() {
       var result = new CommandLineParser<EnumTypes>().ParseArguments(["-Many", "One", "two", "0"]);
 
-      Assert.Empty(result.Errors);
-      Assert.Equal([ByteEnum.One, ByteEnum.Two, ByteEnum.Zero], result.Value.Many);
+      result.Errors.ShouldBeEmpty();
+      result.Value.Many.ShouldBe([ByteEnum.One, ByteEnum.Two, ByteEnum.Zero]);
    }
 
    [Fact]
    public void InvalidEnumNameIsInvalidValue() {
       var result = new CommandLineParser<EnumTypes>().ParseArguments(["-Byte", "Three"]);
 
-      var error = Assert.Single(result.Errors);
-      Assert.Equal(ParserErrorKinds.InvalidValue, error.Kind);
+      var error = result.Errors.ShouldHaveSingleItem();
+      error.Kind.ShouldBe(ParserErrorKinds.InvalidValue);
    }
 
    [Theory]
@@ -289,63 +288,63 @@ public class TypeConversionTests {
    public void BoolLiterals(string literal, bool expected) {
       var result = new CommandLineParser<BoolArgs>().ParseArguments(["-f", literal]);
 
-      Assert.Empty(result.Errors);
-      Assert.Equal(expected, result.Value.Flag);
+      result.Errors.ShouldBeEmpty();
+      result.Value.Flag.ShouldBe(expected);
    }
 
    [Fact]
    public void BoolFollowedByNonBoolValueIsTrueAndValueGoesToDefaultArgument() {
       var result = new CommandLineParser<BoolArgs>().ParseArguments(["-f", "file1", "file2"]);
 
-      Assert.Empty(result.Errors);
-      Assert.True(result.Value.Flag);
-      Assert.Equal(["file1", "file2"], result.Value.Files!);
+      result.Errors.ShouldBeEmpty();
+      result.Value.Flag.ShouldBeTrue();
+      result.Value.Files!.ShouldBe(["file1", "file2"]);
    }
 
    [Fact]
    public void BoolWithDefaultTrueCanBeSwitchedOff() {
       var result = new CommandLineParser<BoolArgs>().ParseArguments(["-OnByDefault", "false"]);
 
-      Assert.Empty(result.Errors);
-      Assert.False(result.Value.OnByDefault);
-      Assert.True(new CommandLineParser<BoolArgs>().Parse([]).OnByDefault);
+      result.Errors.ShouldBeEmpty();
+      result.Value.OnByDefault.ShouldBeFalse();
+      new CommandLineParser<BoolArgs>().Parse([]).OnByDefault.ShouldBeTrue();
    }
 
    [Fact]
    public void CollectionsRespectCulture() {
       var result = new CommandLineParser<CultureArgs>().ParseArguments(["-German", "1,5", "2,5", "-Invariant", "1.5", "2.5", "-Dates", "24.12.2020"]);
 
-      Assert.Empty(result.Errors);
-      Assert.Equal([1.5, 2.5], result.Value.German!);
-      Assert.Equal([1.5, 2.5], result.Value.Invariant!);
-      Assert.Equal([new DateTime(2020, 12, 24)], result.Value.Dates!);
+      result.Errors.ShouldBeEmpty();
+      result.Value.German!.ShouldBe([1.5, 2.5]);
+      result.Value.Invariant!.ShouldBe([1.5, 2.5]);
+      result.Value.Dates!.ShouldBe([new DateTime(2020, 12, 24)]);
    }
 
    [Fact]
    public void NegativeNumbersDoNotNeedQuotes() {
       var result = new CommandLineParser<NegativeArgs>().ParseArguments(["-v", "-5", "-p", "-1.5", "-.5", "2"]);
 
-      Assert.Empty(result.Errors);
-      Assert.Equal(-5, result.Value.Value);
-      Assert.Equal([-1.5, -0.5, 2], result.Value.Points!);
+      result.Errors.ShouldBeEmpty();
+      result.Value.Value.ShouldBe(-5);
+      result.Value.Points!.ShouldBe([-1.5, -0.5, 2]);
    }
 
    [Fact]
    public void QuotedNegativeNumbersStillWork() {
       var result = new CommandLineParser<NegativeArgs>().ParseArguments(["-v", "\"-5\""]);
 
-      Assert.Empty(result.Errors);
-      Assert.Equal(-5, result.Value.Value);
+      result.Errors.ShouldBeEmpty();
+      result.Value.Value.ShouldBe(-5);
    }
 
    [Fact]
    public void CustomTypesWithStaticParseAreSupportedByReflection() {
       var result = new CommandLineParser<CustomTypes>().ParseArguments(["-Point", "3,4", "-Price", "1.234,50"]);
 
-      Assert.Empty(result.Errors);
-      Assert.Equal(3, result.Value.Point!.X);
-      Assert.Equal(4, result.Value.Point.Y);
-      Assert.Equal(1234.50m, result.Value.Price!.Amount);
+      result.Errors.ShouldBeEmpty();
+      result.Value.Point!.X.ShouldBe(3);
+      result.Value.Point.Y.ShouldBe(4);
+      result.Value.Price!.Amount.ShouldBe(1234.50m);
    }
 
    [Fact]
@@ -355,9 +354,9 @@ public class TypeConversionTests {
 
       var result = parser.ParseArguments(["-Color", "red", "-Palette", "green", "blue"]);
 
-      Assert.Empty(result.Errors);
-      Assert.Equal("RED", result.Value.Color!.Name);
-      Assert.Equal(["GREEN", "BLUE"], result.Value.Palette!.Select(c => c.Name));
+      result.Errors.ShouldBeEmpty();
+      result.Value.Color!.Name.ShouldBe("RED");
+      result.Value.Palette!.Select(c => c.Name).ShouldBe(["GREEN", "BLUE"]);
    }
 
    [Fact]
@@ -367,8 +366,8 @@ public class TypeConversionTests {
 
       var result = parser.ParseArguments(["-Number", "abcd"]);
 
-      Assert.Empty(result.Errors);
-      Assert.Equal(4, result.Value.Number);
+      result.Errors.ShouldBeEmpty();
+      result.Value.Number.ShouldBe(4);
    }
 
    [Fact]
@@ -378,28 +377,28 @@ public class TypeConversionTests {
 
       var result = parser.ParseArguments(["-Color", "red"]);
 
-      var error = Assert.Single(result.Errors);
-      Assert.Equal(ParserErrorKinds.InvalidValue, error.Kind);
-      Assert.Contains("boom", error.Message);
+      var error = result.Errors.ShouldHaveSingleItem();
+      error.Kind.ShouldBe(ParserErrorKinds.InvalidValue);
+      error.Message.ShouldContain("boom", Case.Sensitive);
    }
 
    [Fact]
    public void DefaultValuesAreConvertedToMemberType() {
       var result = new CommandLineParser<DefaultValueArgs>().ParseArguments([]);
 
-      Assert.Empty(result.Errors);
-      Assert.Equal(new DateTime(2020, 1, 2), result.Value.Date);
-      Assert.Equal(42L, result.Value.Long);
-      Assert.Equal(ByteEnum.Two, result.Value.Enum);
-      Assert.Equal(7, result.Value.Nullable);
-      Assert.Equal(["a", "b"], result.Value.Names!);
+      result.Errors.ShouldBeEmpty();
+      result.Value.Date.ShouldBe(new DateTime(2020, 1, 2));
+      result.Value.Long.ShouldBe(42L);
+      result.Value.Enum.ShouldBe(ByteEnum.Two);
+      result.Value.Nullable.ShouldBe(7);
+      result.Value.Names!.ShouldBe(["a", "b"]);
    }
 
    [Fact]
    public void UnconvertibleDefaultValueIsAProgrammingError() {
       var parser = new CommandLineParser<BadDefaultArgs>();
 
-      Assert.Throws<InvalidOperationException>(() => parser.Parse([]));
+      Should.Throw<InvalidOperationException>(() => parser.Parse([]));
    }
 
    [Fact]
@@ -407,7 +406,7 @@ public class TypeConversionTests {
       var options = new CommandLineParserOptions { DefaultCulture = CultureInfo.GetCultureInfo("de-DE") };
       var result = new CommandLineParser<CultureArgs>(options).ParseArguments(["-Invariant", "1,5"]);
 
-      Assert.Empty(result.Errors);
-      Assert.Equal([1.5], result.Value.Invariant!);
+      result.Errors.ShouldBeEmpty();
+      result.Value.Invariant!.ShouldBe([1.5]);
    }
 }

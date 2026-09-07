@@ -1,11 +1,10 @@
 using holonsoft.CmdLineParser.Abstractions;
 using holonsoft.CmdLineParser.Abstractions.Enums;
-using Xunit;
 
 namespace holonsoft.CmdLineParser.Tests;
 
-public class ErrorReportingTests {
-   public class Args {
+public sealed class ErrorReportingTests {
+   public sealed class Args {
       [Argument(ArgumentTypes.AtMostOnce, ShortName = "n")]
       public int Number;
 
@@ -25,76 +24,76 @@ public class ErrorReportingTests {
    public void InvalidValueIsReportedInsteadOfThrowing() {
       var result = Parse("-n", "abc");
 
-      var error = Assert.Single(result.Errors);
-      Assert.Equal(ParserErrorKinds.InvalidValue, error.Kind);
-      Assert.Equal("n", error.ArgumentName);
-      Assert.Equal("abc", error.Value);
-      Assert.Contains("abc", error.Message);
-      Assert.Equal(0, result.Value.Number);
+      var error = result.Errors.ShouldHaveSingleItem();
+      error.Kind.ShouldBe(ParserErrorKinds.InvalidValue);
+      error.ArgumentName.ShouldBe("n");
+      error.Value.ShouldBe("abc");
+      error.Message.ShouldContain("abc", Case.Sensitive);
+      result.Value.Number.ShouldBe(0);
    }
 
    [Fact]
    public void OverflowIsInvalidValueNotSilentTruncation() {
       var result = Parse("-b", "300");
 
-      var error = Assert.Single(result.Errors);
-      Assert.Equal(ParserErrorKinds.InvalidValue, error.Kind);
-      Assert.Equal(0, result.Value.Small);
+      var error = result.Errors.ShouldHaveSingleItem();
+      error.Kind.ShouldBe(ParserErrorKinds.InvalidValue);
+      result.Value.Small.ShouldBe((byte) 0);
    }
 
    [Fact]
    public void InvalidCollectionElementReportsEachBadValue() {
       var result = Parse("-l", "1", "x", "y");
 
-      Assert.Equal(2, result.Errors.Count);
-      Assert.All(result.Errors, e => Assert.Equal(ParserErrorKinds.InvalidValue, e.Kind));
-      Assert.Null(result.Value.List);
+      result.Errors.Count.ShouldBe(2);
+      result.Errors.ShouldAllBe(e => e.Kind == ParserErrorKinds.InvalidValue);
+      result.Value.List.ShouldBeNull();
    }
 
    [Fact]
    public void MissingValueForScalarAtEnd() {
       var result = Parse("-n");
 
-      var error = Assert.Single(result.Errors);
-      Assert.Equal(ParserErrorKinds.MissingValue, error.Kind);
+      var error = result.Errors.ShouldHaveSingleItem();
+      error.Kind.ShouldBe(ParserErrorKinds.MissingValue);
    }
 
    [Fact]
    public void MissingValueForScalarFollowedByOption() {
       var result = Parse("-n", "-t", "x");
 
-      var error = Assert.Single(result.Errors);
-      Assert.Equal(ParserErrorKinds.MissingValue, error.Kind);
-      Assert.Equal("n", error.ArgumentName);
-      Assert.Equal("x", result.Value.Text);
+      var error = result.Errors.ShouldHaveSingleItem();
+      error.Kind.ShouldBe(ParserErrorKinds.MissingValue);
+      error.ArgumentName.ShouldBe("n");
+      result.Value.Text.ShouldBe("x");
    }
 
    [Fact]
    public void MissingValueForCollection() {
       var result = Parse("-l");
 
-      var error = Assert.Single(result.Errors);
-      Assert.Equal(ParserErrorKinds.MissingValue, error.Kind);
+      var error = result.Errors.ShouldHaveSingleItem();
+      error.Kind.ShouldBe(ParserErrorKinds.MissingValue);
    }
 
    [Fact]
    public void ValueWithoutDefaultArgumentIsUnexpected() {
       var result = Parse("-n", "1", "stray");
 
-      var error = Assert.Single(result.Errors);
-      Assert.Equal(ParserErrorKinds.UnexpectedValue, error.Kind);
-      Assert.Equal("stray", error.Value);
-      Assert.Equal(string.Empty, error.ArgumentName);
+      var error = result.Errors.ShouldHaveSingleItem();
+      error.Kind.ShouldBe(ParserErrorKinds.UnexpectedValue);
+      error.Value.ShouldBe("stray");
+      error.ArgumentName.ShouldBe(string.Empty);
    }
 
    [Fact]
    public void UnknownArgumentSwallowsItsValues() {
       var result = Parse("-unknown", "a", "b", "-n", "1");
 
-      var error = Assert.Single(result.Errors);
-      Assert.Equal(ParserErrorKinds.UnknownArgument, error.Kind);
-      Assert.Equal("unknown", error.ArgumentName);
-      Assert.Equal(1, result.Value.Number);
+      var error = result.Errors.ShouldHaveSingleItem();
+      error.Kind.ShouldBe(ParserErrorKinds.UnknownArgument);
+      error.ArgumentName.ShouldBe("unknown");
+      result.Value.Number.ShouldBe(1);
    }
 
    [Fact]
@@ -104,25 +103,25 @@ public class ErrorReportingTests {
 
       parser.Parse(["-n", "abc", "stray"], (kind, hint) => hints.Add((kind, hint)));
 
-      Assert.Contains((ParserErrorKinds.InvalidValue, "n"), hints);
-      Assert.Contains((ParserErrorKinds.UnexpectedValue, "stray"), hints);
+      hints.ShouldContain((ParserErrorKinds.InvalidValue, "n"));
+      hints.ShouldContain((ParserErrorKinds.UnexpectedValue, "stray"));
    }
 
    [Fact]
    public void ResultFlagsAreConsistent() {
       var ok = Parse("-n", "1");
-      Assert.True(ok.IsSuccess);
-      Assert.False(ok.HasErrors);
-      Assert.False(ok.HelpRequested);
+      ok.IsSuccess.ShouldBeTrue();
+      ok.HasErrors.ShouldBeFalse();
+      ok.HelpRequested.ShouldBeFalse();
 
       var failed = Parse("-n", "x");
-      Assert.False(failed.IsSuccess);
-      Assert.True(failed.HasErrors);
+      failed.IsSuccess.ShouldBeFalse();
+      failed.HasErrors.ShouldBeTrue();
 
       var help = Parse("--help");
-      Assert.False(help.IsSuccess);
-      Assert.False(help.HasErrors);
-      Assert.True(help.HelpRequested);
+      help.IsSuccess.ShouldBeFalse();
+      help.HasErrors.ShouldBeFalse();
+      help.HelpRequested.ShouldBeTrue();
    }
 
    [Fact]
@@ -130,34 +129,34 @@ public class ErrorReportingTests {
       var parser = new CommandLineParser<Args>();
 
       parser.ParseArguments(["-n", "x"]);
-      Assert.True(parser.HasErrors);
-      Assert.Single(parser.Errors);
+      parser.HasErrors.ShouldBeTrue();
+      parser.Errors.ShouldHaveSingleItem();
 
       parser.ParseArguments(["-n", "1"]);
-      Assert.False(parser.HasErrors);
-      Assert.Empty(parser.Errors);
+      parser.HasErrors.ShouldBeFalse();
+      parser.Errors.ShouldBeEmpty();
    }
 
    [Fact]
    public void ErrorToStringIsTheMessage() {
       var error = Parse("-n", "abc").Errors[0];
 
-      Assert.Equal(error.Message, error.ToString());
+      error.ToString().ShouldBe(error.Message);
    }
 
    [Fact]
    public void NullArgumentsThrow() {
       var parser = new CommandLineParser<Args>();
 
-      Assert.Throws<ArgumentNullException>(() => parser.Parse(null!));
-      Assert.Throws<ArgumentException>(() => parser.Parse(["-n", null!]));
+      Should.Throw<ArgumentNullException>(() => parser.Parse(null!));
+      Should.Throw<ArgumentException>(() => parser.Parse(["-n", null!]));
    }
 
    [Fact]
    public void EmptyStringIsAValue() {
       var result = Parse("-t", "");
 
-      Assert.Empty(result.Errors);
-      Assert.Equal(string.Empty, result.Value.Text);
+      result.Errors.ShouldBeEmpty();
+      result.Value.Text.ShouldBe(string.Empty);
    }
 }

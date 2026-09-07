@@ -1,17 +1,16 @@
 using holonsoft.CmdLineParser.Abstractions;
 using holonsoft.CmdLineParser.Abstractions.Enums;
-using Xunit;
 
 namespace holonsoft.CmdLineParser.Tests;
 
-public class EnvironmentVariableTests {
+public sealed class EnvironmentVariableTests {
    private const string NumberVariable = "CMDLINEPARSER_TEST_NUMBER";
    private const string RequiredVariable = "CMDLINEPARSER_TEST_REQUIRED";
    private const string ListVariable = "CMDLINEPARSER_TEST_LIST";
    private const string DefaultVariable = "CMDLINEPARSER_TEST_DEFAULT";
    private const string DictionaryVariable = "CMDLINEPARSER_TEST_DICT";
 
-   public class Args {
+   public sealed class Args {
       [Argument(ArgumentTypes.AtMostOnce, EnvironmentVariable = NumberVariable, HelpText = "A number.")]
       public int Number;
 
@@ -43,8 +42,8 @@ public class EnvironmentVariableTests {
 
       var result = new CommandLineParser<Args>().ParseArguments(["-Required", "x"]);
 
-      Assert.Empty(result.Errors);
-      Assert.Equal(42, result.Value.Number);
+      result.Errors.ShouldBeEmpty();
+      result.Value.Number.ShouldBe(42);
    }
 
    [Fact]
@@ -53,7 +52,7 @@ public class EnvironmentVariableTests {
 
       var result = new CommandLineParser<Args>().ParseArguments(["-Required", "x", "-Number", "1"]);
 
-      Assert.Equal(1, result.Value.Number);
+      result.Value.Number.ShouldBe(1);
    }
 
    [Fact]
@@ -62,8 +61,8 @@ public class EnvironmentVariableTests {
 
       var result = new CommandLineParser<Args>().ParseArguments([]);
 
-      Assert.Empty(result.Errors);
-      Assert.Equal("from env", result.Value.Required);
+      result.Errors.ShouldBeEmpty();
+      result.Value.Required.ShouldBe("from env");
    }
 
    [Fact]
@@ -72,7 +71,7 @@ public class EnvironmentVariableTests {
 
       var result = new CommandLineParser<Args>().ParseArguments([]);
 
-      Assert.Contains(result.Errors, e => e.Kind == ParserErrorKinds.MissingArgument && e.ArgumentName == "Required");
+      result.Errors.ShouldContain(e => e.Kind == ParserErrorKinds.MissingArgument && e.ArgumentName == "Required");
    }
 
    [Fact]
@@ -81,8 +80,8 @@ public class EnvironmentVariableTests {
 
       var result = new CommandLineParser<Args>().ParseArguments(["-Required", "x"]);
 
-      Assert.Empty(result.Errors);
-      Assert.Equal(["a", "b", "c"], result.Value.List!);
+      result.Errors.ShouldBeEmpty();
+      result.Value.List!.ShouldBe(["a", "b", "c"]);
    }
 
    [Fact]
@@ -91,9 +90,9 @@ public class EnvironmentVariableTests {
 
       var result = new CommandLineParser<Args>().ParseArguments(["-Required", "x"]);
 
-      Assert.Empty(result.Errors);
-      Assert.Equal("1", result.Value.Dictionary["a"]);
-      Assert.Equal("2", result.Value.Dictionary["b"]);
+      result.Errors.ShouldBeEmpty();
+      result.Value.Dictionary["a"].ShouldBe("1");
+      result.Value.Dictionary["b"].ShouldBe("2");
    }
 
    [Fact]
@@ -102,19 +101,19 @@ public class EnvironmentVariableTests {
 
       var result = new CommandLineParser<Args>().ParseArguments(["-Required", "x"]);
 
-      var error = Assert.Single(result.Errors);
-      Assert.Equal(ParserErrorKinds.InvalidValue, error.Kind);
-      Assert.Equal("Number", error.ArgumentName);
-      Assert.Equal("abc", error.Value);
+      var error = result.Errors.ShouldHaveSingleItem();
+      error.Kind.ShouldBe(ParserErrorKinds.InvalidValue);
+      error.ArgumentName.ShouldBe("Number");
+      error.Value.ShouldBe("abc");
    }
 
    [Fact]
    public void EnvironmentBeatsDefaultValue() {
       using (Set(DefaultVariable, "3")) {
-         Assert.Equal(3, new CommandLineParser<Args>().Parse(["-Required", "x"]).WithDefault);
+         new CommandLineParser<Args>().Parse(["-Required", "x"]).WithDefault.ShouldBe(3);
       }
 
-      Assert.Equal(7, new CommandLineParser<Args>().Parse(["-Required", "x"]).WithDefault);
+      new CommandLineParser<Args>().Parse(["-Required", "x"]).WithDefault.ShouldBe(7);
    }
 
    [Fact]
@@ -123,8 +122,8 @@ public class EnvironmentVariableTests {
 
       var result = new CommandLineParser<Args>().ParseArguments(["-Required", "x"]);
 
-      Assert.Empty(result.Errors);
-      Assert.Equal(0, result.Value.Number);
+      result.Errors.ShouldBeEmpty();
+      result.Value.Number.ShouldBe(0);
    }
 
    [Fact]
@@ -132,14 +131,14 @@ public class EnvironmentVariableTests {
       using var _ = Set(NumberVariable, "42");
       var parser = new CommandLineParser<Args>(new CommandLineParserOptions { UseEnvironmentVariables = false });
 
-      Assert.Equal(0, parser.Parse(["-Required", "x"]).Number);
+      parser.Parse(["-Required", "x"]).Number.ShouldBe(0);
    }
 
    [Fact]
    public void HelpMentionsTheVariable() {
       var parser = new CommandLineParser<Args>();
 
-      Assert.Equal(NumberVariable, parser.GetHelpEntries().Single(e => e.Name == "Number").EnvironmentVariable);
-      Assert.Contains("(env: " + NumberVariable + ")", parser.GetConsoleFormattedHelpTexts(120));
+      parser.GetHelpEntries().Single(e => e.Name == "Number").EnvironmentVariable.ShouldBe(NumberVariable);
+      parser.GetConsoleFormattedHelpTexts(120).ShouldContain("(env: " + NumberVariable + ")", Case.Sensitive);
    }
 }

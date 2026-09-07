@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net8.0;net9.0;net10.0</TargetFrameworks>
+    <TargetFrameworks>$(LibraryTargetFrameworks)</TargetFrameworks>
     <Title>Command Line Parser</Title>
     <Description>Reflection based fast command line parser (args[] -> POCO). Attribute your fields or properties, get a filled object plus structured errors and help text.</Description>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>

@@ -1,5 +1,4 @@
 using holonsoft.CmdLineParser.Internal;
-using Xunit;
 
 namespace holonsoft.CmdLineParser.Tests;
 
@@ -7,7 +6,7 @@ namespace holonsoft.CmdLineParser.Tests;
 /// Throws random token sequences at the parsers. The contract under test: user input never causes an exception,
 /// only reported errors. Seeds are fixed so a failure can be reproduced.
 /// </summary>
-public class FuzzTests {
+public sealed class FuzzTests {
    private const int Iterations = 1500;
 
    private static readonly string[] Fragments = [
@@ -55,9 +54,9 @@ public class FuzzTests {
 
          foreach (var parse in parsers) {
             try {
-               Assert.NotNull(parse(args));
+               parse(args).ShouldNotBeNull();
             } catch (Exception ex) {
-               Assert.Fail($"Seed {seed}, iteration {i}, args [{string.Join(" | ", args)}]: {ex}");
+               throw new ShouldAssertException($"Seed {seed}, iteration {i}, args [{string.Join(" | ", args)}]: {ex}", ex);
             }
          }
       }
@@ -73,8 +72,8 @@ public class FuzzTests {
 
          var token = lexer.Classify(raw, afterEndOfOptions: random.Next(4) == 0);
 
-         Assert.NotNull(token.Name);
-         Assert.True(token.Kind != LexedTokenKind.Value || token.Value is not null);
+         token.Name.ShouldNotBeNull();
+         (token.Kind != LexedTokenKind.Value || token.Value is not null).ShouldBeTrue();
       }
    }
 
@@ -86,12 +85,12 @@ public class FuzzTests {
       for (var i = 0; i < 200; i++) {
          var width = random.Next(1, 300);
 
-         Assert.NotNull(parser.GetConsoleFormattedHelpTexts(width));
-         Assert.NotNull(parser.GetConsoleFormattedHelpTexts("tool", width));
+         parser.GetConsoleFormattedHelpTexts(width).ShouldNotBeNull();
+         parser.GetConsoleFormattedHelpTexts("tool", width).ShouldNotBeNull();
       }
 
       foreach (var shell in Enum.GetValues<CompletionShell>()) {
-         Assert.NotEmpty(parser.GetCompletionScript(shell, "tool"));
+         parser.GetCompletionScript(shell, "tool").ShouldNotBeNullOrEmpty();
       }
    }
 }

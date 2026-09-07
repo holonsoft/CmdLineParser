@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net8.0;net9.0;net10.0</TargetFrameworks>
+    <TargetFrameworks>$(LibraryTargetFrameworks)</TargetFrameworks>
     <Title>Command Line Parser Abstractions</Title>
     <Description>Attributes and enums for holonsoft.CmdLineParser. Reference this package from assemblies that only define argument classes.</Description>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>

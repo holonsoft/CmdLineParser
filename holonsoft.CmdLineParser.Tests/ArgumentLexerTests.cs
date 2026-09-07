@@ -1,9 +1,8 @@
 using holonsoft.CmdLineParser.Internal;
-using Xunit;
 
 namespace holonsoft.CmdLineParser.Tests;
 
-public class ArgumentLexerTests {
+public sealed class ArgumentLexerTests {
    private static ArgumentLexer Create(Action<CommandLineParserOptions>? configure = null) {
       var options = new CommandLineParserOptions();
       configure?.Invoke(options);
@@ -18,9 +17,9 @@ public class ArgumentLexerTests {
    public void OptionPrefixes(string raw, string expectedName) {
       var token = Create().Classify(raw, afterEndOfOptions: false);
 
-      Assert.Equal(LexedTokenKind.Option, token.Kind);
-      Assert.Equal(expectedName, token.Name);
-      Assert.Null(token.Value);
+      token.Kind.ShouldBe(LexedTokenKind.Option);
+      token.Name.ShouldBe(expectedName);
+      token.Value.ShouldBeNull();
    }
 
    [Theory]
@@ -33,9 +32,9 @@ public class ArgumentLexerTests {
    public void InlineValues(string raw, string expectedName, string expectedValue) {
       var token = Create().Classify(raw, afterEndOfOptions: false);
 
-      Assert.Equal(LexedTokenKind.Option, token.Kind);
-      Assert.Equal(expectedName, token.Name);
-      Assert.Equal(expectedValue, token.Value);
+      token.Kind.ShouldBe(LexedTokenKind.Option);
+      token.Name.ShouldBe(expectedName);
+      token.Value.ShouldBe(expectedValue);
    }
 
    [Theory]
@@ -55,32 +54,32 @@ public class ArgumentLexerTests {
    public void Values(string raw, string expectedValue) {
       var token = Create().Classify(raw, afterEndOfOptions: false);
 
-      Assert.Equal(LexedTokenKind.Value, token.Kind);
-      Assert.Equal(expectedValue, token.Value);
+      token.Kind.ShouldBe(LexedTokenKind.Value);
+      token.Value.ShouldBe(expectedValue);
    }
 
    [Fact]
    public void EndOfOptionsMarker() {
       var lexer = Create();
 
-      Assert.Equal(LexedTokenKind.EndOfOptions, lexer.Classify("--", afterEndOfOptions: false).Kind);
+      lexer.Classify("--", afterEndOfOptions: false).Kind.ShouldBe(LexedTokenKind.EndOfOptions);
 
       var afterwards = lexer.Classify("-looks-like-option", afterEndOfOptions: true);
-      Assert.Equal(LexedTokenKind.Value, afterwards.Kind);
-      Assert.Equal("-looks-like-option", afterwards.Value);
+      afterwards.Kind.ShouldBe(LexedTokenKind.Value);
+      afterwards.Value.ShouldBe("-looks-like-option");
    }
 
    [Fact]
    public void EndOfOptionsMarkerCanBeDisabled() {
       var token = Create(o => o.RecognizeEndOfOptionsMarker = false).Classify("--", afterEndOfOptions: false);
 
-      Assert.Equal(LexedTokenKind.Value, token.Kind);
-      Assert.Equal("--", token.Value);
+      token.Kind.ShouldBe(LexedTokenKind.Value);
+      token.Value.ShouldBe("--");
    }
 
    [Fact]
    public void SlashPrefixDefaultFollowsTheOperatingSystem() {
-      Assert.Equal(OperatingSystem.IsWindows(), new CommandLineParserOptions().AllowSlashPrefix);
+      new CommandLineParserOptions().AllowSlashPrefix.ShouldBe(OperatingSystem.IsWindows());
    }
 
    [Theory]
@@ -91,9 +90,9 @@ public class ArgumentLexerTests {
    public void SlashPrefixWhenEnabled(string raw, string expectedName, string? expectedValue) {
       var token = Create(o => o.AllowSlashPrefix = true).Classify(raw, afterEndOfOptions: false);
 
-      Assert.Equal(LexedTokenKind.Option, token.Kind);
-      Assert.Equal(expectedName, token.Name);
-      Assert.Equal(expectedValue, token.Value);
+      token.Kind.ShouldBe(LexedTokenKind.Option);
+      token.Name.ShouldBe(expectedName);
+      token.Value.ShouldBe(expectedValue);
    }
 
    [Theory]
@@ -103,18 +102,18 @@ public class ArgumentLexerTests {
    public void SlashPrefixWhenDisabled(string raw) {
       var token = Create(o => o.AllowSlashPrefix = false).Classify(raw, afterEndOfOptions: false);
 
-      Assert.Equal(LexedTokenKind.Value, token.Kind);
-      Assert.Equal(raw, token.Value);
+      token.Kind.ShouldBe(LexedTokenKind.Value);
+      token.Value.ShouldBe(raw);
    }
 
    [Fact]
    public void ValueSeparatorsAreConfigurable() {
       var colonOnly = Create(o => o.ValueSeparators = [':']).Classify("-name=value", afterEndOfOptions: false);
-      Assert.Equal("name=value", colonOnly.Name);
-      Assert.Null(colonOnly.Value);
+      colonOnly.Name.ShouldBe("name=value");
+      colonOnly.Value.ShouldBeNull();
 
       var none = Create(o => o.ValueSeparators = []).Classify("-name:value", afterEndOfOptions: false);
-      Assert.Equal("name:value", none.Name);
+      none.Name.ShouldBe("name:value");
    }
 
    [Theory]
@@ -128,6 +127,6 @@ public class ArgumentLexerTests {
    [InlineData("--5", false)]
    [InlineData("5", false)]
    public void NegativeNumberDetection(string raw, bool expected) {
-      Assert.Equal(expected, ArgumentLexer.LooksLikeNegativeNumber(raw));
+      ArgumentLexer.LooksLikeNegativeNumber(raw).ShouldBe(expected);
    }
 }
