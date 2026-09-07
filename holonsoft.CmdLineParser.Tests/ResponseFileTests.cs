@@ -1,11 +1,10 @@
 using holonsoft.CmdLineParser.Abstractions;
 using holonsoft.CmdLineParser.Abstractions.Enums;
 using holonsoft.CmdLineParser.Internal;
-using Xunit;
 
 namespace holonsoft.CmdLineParser.Tests;
 
-public class ResponseFileTests : IDisposable {
+public sealed class ResponseFileTests : IDisposable {
    private readonly string _directory = Path.Combine(Path.GetTempPath(), "CmdLineParserTests", Guid.NewGuid().ToString("N"));
 
    public ResponseFileTests() => Directory.CreateDirectory(_directory);
@@ -15,7 +14,7 @@ public class ResponseFileTests : IDisposable {
       GC.SuppressFinalize(this);
    }
 
-   public class Args {
+   public sealed class Args {
       [Argument(ArgumentTypes.AtMostOnce)]
       public int Number;
 
@@ -41,10 +40,10 @@ public class ResponseFileTests : IDisposable {
 
       var result = new CommandLineParser<Args>().ParseArguments(["@" + path, "-Verbose"]);
 
-      Assert.Empty(result.Errors);
-      Assert.Equal(5, result.Value.Number);
-      Assert.Equal(["a", "b c", "d"], result.Value.Items!);
-      Assert.True(result.Value.Verbose);
+      result.Errors.ShouldBeEmpty();
+      result.Value.Number.ShouldBe(5);
+      result.Value.Items!.ShouldBe(["a", "b c", "d"]);
+      result.Value.Verbose.ShouldBeTrue();
    }
 
    [Fact]
@@ -53,8 +52,8 @@ public class ResponseFileTests : IDisposable {
 
       var result = new CommandLineParser<Args>().ParseArguments(["@" + path]);
 
-      Assert.Empty(result.Errors);
-      Assert.Equal(-5, result.Value.Number);
+      result.Errors.ShouldBeEmpty();
+      result.Value.Number.ShouldBe(-5);
    }
 
    [Fact]
@@ -64,10 +63,10 @@ public class ResponseFileTests : IDisposable {
 
       var result = new CommandLineParser<Args>().ParseArguments(["@" + outer]);
 
-      Assert.Empty(result.Errors);
-      Assert.Equal(1, result.Value.Number);
-      Assert.True(result.Value.Verbose);
-      Assert.Equal(["x"], result.Value.Rest!);
+      result.Errors.ShouldBeEmpty();
+      result.Value.Number.ShouldBe(1);
+      result.Value.Verbose.ShouldBeTrue();
+      result.Value.Rest!.ShouldBe(["x"]);
    }
 
    [Fact]
@@ -76,10 +75,10 @@ public class ResponseFileTests : IDisposable {
 
       var result = new CommandLineParser<Args>().ParseArguments(["@" + path, "-Number", "2"]);
 
-      var error = Assert.Single(result.Errors);
-      Assert.Equal(ParserErrorKinds.ResponseFileError, error.Kind);
-      Assert.Equal(path, error.Value);
-      Assert.Equal(2, result.Value.Number);
+      var error = result.Errors.ShouldHaveSingleItem();
+      error.Kind.ShouldBe(ParserErrorKinds.ResponseFileError);
+      error.Value.ShouldBe(path);
+      result.Value.Number.ShouldBe(2);
    }
 
    [Fact]
@@ -89,34 +88,34 @@ public class ResponseFileTests : IDisposable {
 
       var result = new CommandLineParser<Args>().ParseArguments(["@" + path, "-Verbose"]);
 
-      var error = Assert.Single(result.Errors);
-      Assert.Equal(ParserErrorKinds.ResponseFileError, error.Kind);
-      Assert.Contains("nested", error.Message);
-      Assert.True(result.Value.Verbose);
+      var error = result.Errors.ShouldHaveSingleItem();
+      error.Kind.ShouldBe(ParserErrorKinds.ResponseFileError);
+      error.Message.ShouldContain("nested", Case.Sensitive);
+      result.Value.Verbose.ShouldBeTrue();
    }
 
    [Fact]
    public void ReferencesAfterEndOfOptionsAreLiteral() {
       var result = new CommandLineParser<Args>().ParseArguments(["--", "@nofile"]);
 
-      Assert.Empty(result.Errors);
-      Assert.Equal(["@nofile"], result.Value.Rest!);
+      result.Errors.ShouldBeEmpty();
+      result.Value.Rest!.ShouldBe(["@nofile"]);
    }
 
    [Fact]
    public void DoubleAtEscapesTheReference() {
       var result = new CommandLineParser<Args>().ParseArguments(["@@literal"]);
 
-      Assert.Empty(result.Errors);
-      Assert.Equal(["@literal"], result.Value.Rest!);
+      result.Errors.ShouldBeEmpty();
+      result.Value.Rest!.ShouldBe(["@literal"]);
    }
 
    [Fact]
    public void LoneAtIsAValue() {
       var result = new CommandLineParser<Args>().ParseArguments(["@"]);
 
-      Assert.Empty(result.Errors);
-      Assert.Equal(["@"], result.Value.Rest!);
+      result.Errors.ShouldBeEmpty();
+      result.Value.Rest!.ShouldBe(["@"]);
    }
 
    [Fact]
@@ -125,14 +124,14 @@ public class ResponseFileTests : IDisposable {
 
       var result = parser.ParseArguments(["@file"]);
 
-      Assert.Empty(result.Errors);
-      Assert.Equal(["@file"], result.Value.Rest!);
+      result.Errors.ShouldBeEmpty();
+      result.Value.Rest!.ShouldBe(["@file"]);
    }
 
    [Fact]
    public void SplitLineKeepsQuotesForTheLexer() {
       var tokens = ResponseFileExpander.SplitLine("a \"b c\" -x:\"y z\"  d\t\"\"");
 
-      Assert.Equal(["a", "\"b c\"", "-x:\"y z\"", "d", "\"\""], tokens);
+      tokens.ShouldBe(["a", "\"b c\"", "-x:\"y z\"", "d", "\"\""]);
    }
 }

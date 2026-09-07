@@ -1,11 +1,10 @@
 using holonsoft.CmdLineParser.Abstractions;
 using holonsoft.CmdLineParser.Abstractions.Enums;
-using Xunit;
 
 namespace holonsoft.CmdLineParser.Tests;
 
-public class DefaultArgumentTests {
-   public class CollectionDefault {
+public sealed class DefaultArgumentTests {
+   public sealed class CollectionDefault {
       [Argument(ArgumentTypes.AtMostOnce, ShortName = "v")]
       public bool Verbose;
 
@@ -16,7 +15,7 @@ public class DefaultArgumentTests {
       public string[]? Files;
    }
 
-   public class ScalarDefault {
+   public sealed class ScalarDefault {
       [DefaultArgument(ArgumentTypes.Required)]
       public string? Target;
 
@@ -24,7 +23,7 @@ public class DefaultArgumentTests {
       public bool Force;
    }
 
-   public class NoDefault {
+   public sealed class NoDefault {
       [Argument(ArgumentTypes.AtMostOnce)]
       public int Number;
    }
@@ -33,79 +32,79 @@ public class DefaultArgumentTests {
    public void BareValuesGoToTheDefaultArgument() {
       var result = new CommandLineParser<CollectionDefault>().ParseArguments(["a.txt", "b.txt"]);
 
-      Assert.Empty(result.Errors);
-      Assert.Equal(["a.txt", "b.txt"], result.Value.Files!);
+      result.Errors.ShouldBeEmpty();
+      result.Value.Files!.ShouldBe(["a.txt", "b.txt"]);
    }
 
    [Fact]
    public void BareValuesBetweenOptionsAreGathered() {
       var result = new CommandLineParser<CollectionDefault>().ParseArguments(["a.txt", "-o", "out.txt", "b.txt", "-v", "c.txt"]);
 
-      Assert.Empty(result.Errors);
-      Assert.Equal("out.txt", result.Value.Output);
-      Assert.True(result.Value.Verbose);
-      Assert.Equal(["a.txt", "b.txt", "c.txt"], result.Value.Files!);
+      result.Errors.ShouldBeEmpty();
+      result.Value.Output.ShouldBe("out.txt");
+      result.Value.Verbose.ShouldBeTrue();
+      result.Value.Files!.ShouldBe(["a.txt", "b.txt", "c.txt"]);
    }
 
    [Fact]
    public void DefaultArgumentCanAlsoBeGivenByName() {
       var result = new CommandLineParser<CollectionDefault>().ParseArguments(["-Files", "a.txt", "b.txt"]);
 
-      Assert.Empty(result.Errors);
-      Assert.Equal(["a.txt", "b.txt"], result.Value.Files!);
+      result.Errors.ShouldBeEmpty();
+      result.Value.Files!.ShouldBe(["a.txt", "b.txt"]);
    }
 
    [Fact]
    public void NamedAndBareValuesAreMergedForMultipleCollections() {
       var result = new CommandLineParser<CollectionDefault>().ParseArguments(["-Files", "a.txt", "-v", "b.txt"]);
 
-      Assert.Empty(result.Errors);
-      Assert.Equal(["a.txt", "b.txt"], result.Value.Files!);
+      result.Errors.ShouldBeEmpty();
+      result.Value.Files!.ShouldBe(["a.txt", "b.txt"]);
    }
 
    [Fact]
    public void ValuesAfterEndOfOptionsMarkerAreNeverOptions() {
       var result = new CommandLineParser<CollectionDefault>().ParseArguments(["-v", "--", "-o", "--not-an-option"]);
 
-      Assert.Empty(result.Errors);
-      Assert.True(result.Value.Verbose);
-      Assert.Null(result.Value.Output);
-      Assert.Equal(["-o", "--not-an-option"], result.Value.Files!);
+      result.Errors.ShouldBeEmpty();
+      result.Value.Verbose.ShouldBeTrue();
+      result.Value.Output.ShouldBeNull();
+      result.Value.Files!.ShouldBe(["-o", "--not-an-option"]);
    }
 
    [Fact]
    public void ScalarDefaultArgumentTakesOneValue() {
       var result = new CommandLineParser<ScalarDefault>().ParseArguments(["build", "-Force"]);
 
-      Assert.Empty(result.Errors);
-      Assert.Equal("build", result.Value.Target);
-      Assert.True(result.Value.Force);
+      result.Errors.ShouldBeEmpty();
+      result.Value.Target.ShouldBe("build");
+      result.Value.Force.ShouldBeTrue();
    }
 
    [Fact]
    public void ScalarDefaultArgumentReportsExtraValues() {
       var result = new CommandLineParser<ScalarDefault>().ParseArguments(["build", "extra"]);
 
-      var error = Assert.Single(result.Errors);
-      Assert.Equal(ParserErrorKinds.UnexpectedValue, error.Kind);
-      Assert.Equal("extra", error.Value);
-      Assert.Equal("build", result.Value.Target);
+      var error = result.Errors.ShouldHaveSingleItem();
+      error.Kind.ShouldBe(ParserErrorKinds.UnexpectedValue);
+      error.Value.ShouldBe("extra");
+      result.Value.Target.ShouldBe("build");
    }
 
    [Fact]
    public void RequiredDefaultArgumentMissingIsReported() {
       var result = new CommandLineParser<ScalarDefault>().ParseArguments(["-Force"]);
 
-      var error = Assert.Single(result.Errors);
-      Assert.Equal(ParserErrorKinds.MissingArgument, error.Kind);
-      Assert.Equal("Target", error.ArgumentName);
+      var error = result.Errors.ShouldHaveSingleItem();
+      error.Kind.ShouldBe(ParserErrorKinds.MissingArgument);
+      error.ArgumentName.ShouldBe("Target");
    }
 
    [Fact]
    public void WithoutDefaultArgumentBareValuesAreUnexpected() {
       var result = new CommandLineParser<NoDefault>().ParseArguments(["-Number", "1", "x", "y"]);
 
-      Assert.Equal(2, result.Errors.Count);
-      Assert.All(result.Errors, e => Assert.Equal(ParserErrorKinds.UnexpectedValue, e.Kind));
+      result.Errors.Count.ShouldBe(2);
+      result.Errors.ShouldAllBe(e => e.Kind == ParserErrorKinds.UnexpectedValue);
    }
 }

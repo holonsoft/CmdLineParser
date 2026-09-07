@@ -1,12 +1,11 @@
 using holonsoft.CmdLineParser.Abstractions;
 using holonsoft.CmdLineParser.Abstractions.Enums;
 using holonsoft.CmdLineParser.Abstractions.Validation;
-using Xunit;
 
 namespace holonsoft.CmdLineParser.Tests;
 
-public class MessageFormatterTests {
-   public class Args {
+public sealed class MessageFormatterTests {
+   public sealed class Args {
       [Argument(ArgumentTypes.Required), ValueRange(1, 5)]
       public int Number;
    }
@@ -17,32 +16,32 @@ public class MessageFormatterTests {
       var parser = new CommandLineParser<Args>(options);
 
       var invalid = parser.ParseArguments(["-Number", "abc"]);
-      Assert.Equal("[InvalidValue] Number", Assert.Single(invalid.Errors).Message);
+      invalid.Errors.ShouldHaveSingleItem().Message.ShouldBe("[InvalidValue] Number");
 
       var missing = parser.ParseArguments([]);
-      Assert.Equal("[MissingArgument] Number", Assert.Single(missing.Errors).Message);
+      missing.Errors.ShouldHaveSingleItem().Message.ShouldBe("[MissingArgument] Number");
 
       var validation = parser.ParseArguments(["-Number", "9"]);
-      Assert.Equal("[ValidationFailed] Number", Assert.Single(validation.Errors).Message);
+      validation.Errors.ShouldHaveSingleItem().Message.ShouldBe("[ValidationFailed] Number");
    }
 
    [Fact]
    public void FormatterKeepsKindValueAndName() {
       var options = new CommandLineParserOptions { MessageFormatter = _ => "Fehler" };
-      var error = Assert.Single(new CommandLineParser<Args>(options).ParseArguments(["-Number", "abc"]).Errors);
+      var error = new CommandLineParser<Args>(options).ParseArguments(["-Number", "abc"]).Errors.ShouldHaveSingleItem();
 
-      Assert.Equal("Fehler", error.Message);
-      Assert.Equal(ParserErrorKinds.InvalidValue, error.Kind);
-      Assert.Equal("Number", error.ArgumentName);
-      Assert.Equal("abc", error.Value);
+      error.Message.ShouldBe("Fehler");
+      error.Kind.ShouldBe(ParserErrorKinds.InvalidValue);
+      error.ArgumentName.ShouldBe("Number");
+      error.Value.ShouldBe("abc");
    }
 
    [Fact]
    public void ReturningNullKeepsTheDefaultMessage() {
       var options = new CommandLineParserOptions { MessageFormatter = _ => null };
-      var error = Assert.Single(new CommandLineParser<Args>(options).ParseArguments(["-Number", "abc"]).Errors);
+      var error = new CommandLineParser<Args>(options).ParseArguments(["-Number", "abc"]).Errors.ShouldHaveSingleItem();
 
-      Assert.Contains("is not valid for argument", error.Message);
+      error.Message.ShouldContain("is not valid for argument", Case.Sensitive);
    }
 
    [Fact]
@@ -52,8 +51,8 @@ public class MessageFormatterTests {
 
       var result = new CommandLineParser<Args>(options).ParseArguments(["-Number", "3"]);
 
-      Assert.True(result.IsSuccess);
-      Assert.Equal(0, calls);
+      result.IsSuccess.ShouldBeTrue();
+      calls.ShouldBe(0);
    }
 
    [Fact]
@@ -63,6 +62,6 @@ public class MessageFormatterTests {
 
       new CommandLineParser<Args>(options).ParseArguments(["-Number", "abc"]);
 
-      Assert.Contains("'abc'", seen);
+      seen.ShouldNotBeNull().ShouldContain("'abc'", Case.Sensitive);
    }
 }

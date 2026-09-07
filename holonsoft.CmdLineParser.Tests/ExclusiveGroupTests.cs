@@ -1,11 +1,10 @@
 using holonsoft.CmdLineParser.Abstractions;
 using holonsoft.CmdLineParser.Abstractions.Enums;
-using Xunit;
 
 namespace holonsoft.CmdLineParser.Tests;
 
-public class ExclusiveGroupTests {
-   public class Args {
+public sealed class ExclusiveGroupTests {
+   public sealed class Args {
       [Argument(ArgumentTypes.AtMostOnce, ExclusiveGroup = "input")]
       public string? File;
 
@@ -31,43 +30,43 @@ public class ExclusiveGroupTests {
    public void OneMemberPerGroupIsFine() {
       var result = Parse("-File", "x", "-Fast", "-Verbose");
 
-      Assert.Empty(result.Errors);
+      result.Errors.ShouldBeEmpty();
    }
 
    [Fact]
    public void TwoMembersOfAGroupConflict() {
       var result = Parse("-File", "x", "-Stdin");
 
-      var error = Assert.Single(result.Errors);
-      Assert.Equal(ParserErrorKinds.ExclusiveArgumentConflict, error.Kind);
-      Assert.Equal("File", error.ArgumentName);
-      Assert.Contains("'File'", error.Message);
-      Assert.Contains("'Stdin'", error.Message);
-      Assert.Contains("input", error.Message);
+      var error = result.Errors.ShouldHaveSingleItem();
+      error.Kind.ShouldBe(ParserErrorKinds.ExclusiveArgumentConflict);
+      error.ArgumentName.ShouldBe("File");
+      error.Message.ShouldContain("'File'", Case.Sensitive);
+      error.Message.ShouldContain("'Stdin'", Case.Sensitive);
+      error.Message.ShouldContain("input", Case.Sensitive);
    }
 
    [Fact]
    public void ThreeMembersProduceOneErrorListingAll() {
       var result = Parse("-Stdin", "-File", "x", "--from-url", "u");
 
-      var error = Assert.Single(result.Errors);
-      Assert.Contains("'from-url'", error.Message);
-      Assert.Equal("Stdin", error.ArgumentName);
+      var error = result.Errors.ShouldHaveSingleItem();
+      error.Message.ShouldContain("'from-url'", Case.Sensitive);
+      error.ArgumentName.ShouldBe("Stdin");
    }
 
    [Fact]
    public void EachViolatedGroupIsReported() {
       var result = Parse("-File", "x", "-Stdin", "-Fast", "-Safe");
 
-      Assert.Equal(2, result.Errors.Count);
-      Assert.All(result.Errors, e => Assert.Equal(ParserErrorKinds.ExclusiveArgumentConflict, e.Kind));
+      result.Errors.Count.ShouldBe(2);
+      result.Errors.ShouldAllBe(e => e.Kind == ParserErrorKinds.ExclusiveArgumentConflict);
    }
 
    [Fact]
    public void ValuesAreStillAssignedDespiteTheConflict() {
       var result = Parse("-File", "x", "-Stdin");
 
-      Assert.Equal("x", result.Value.File);
-      Assert.True(result.Value.Stdin);
+      result.Value.File.ShouldBe("x");
+      result.Value.Stdin.ShouldBeTrue();
    }
 }

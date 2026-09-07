@@ -1,11 +1,10 @@
 using holonsoft.CmdLineParser.Abstractions;
-using Xunit;
 
 namespace holonsoft.CmdLineParser.Tests;
 
-public class HelpPolishTests {
+public sealed class HelpPolishTests {
    [CommandLineDescription("Counts things in files.")]
-   public class Args {
+   public sealed class Args {
       [Argument(ArgumentTypes.Required, ShortName = "c", HelpText = "Connections.")]
       public int Connections;
 
@@ -31,7 +30,7 @@ public class HelpPolishTests {
       public string[]? Files;
    }
 
-   public class RequiredOnly {
+   public sealed class RequiredOnly {
       [Argument(ArgumentTypes.Required)]
       public int Count;
 
@@ -42,7 +41,7 @@ public class HelpPolishTests {
       public string? Target;
    }
 
-   public class AliasClash {
+   public sealed class AliasClash {
       [Argument(ArgumentTypes.AtMostOnce, Aliases = new[] { "x" })]
       public int First;
 
@@ -54,10 +53,10 @@ public class HelpPolishTests {
    public void HiddenArgumentsAreParsedButNotListed() {
       var parser = new CommandLineParser<Args>();
 
-      Assert.DoesNotContain(parser.GetHelpEntries(), e => e.Name == "Secret");
-      Assert.DoesNotContain("Secret", parser.GetConsoleFormattedHelpTexts(100));
-      Assert.DoesNotContain("Secret", parser.GetCompletionScript(CompletionShell.Bash, "tool"));
-      Assert.True(parser.Parse(["-c", "1", "-Secret"]).Secret);
+      parser.GetHelpEntries().ShouldNotContain(e => e.Name == "Secret");
+      parser.GetConsoleFormattedHelpTexts(100).ShouldNotContain("Secret", Case.Sensitive);
+      parser.GetCompletionScript(CompletionShell.Bash, "tool").ShouldNotContain("Secret", Case.Sensitive);
+      parser.Parse(["-c", "1", "-Secret"]).Secret.ShouldBeTrue();
    }
 
    [Fact]
@@ -71,39 +70,39 @@ public class HelpPolishTests {
       var source = Array.FindIndex(lines, l => l.Contains("--Source"));
       var quiet = Array.FindIndex(lines, l => l.Contains("--Quiet"));
 
-      Assert.True(connections < input, "uncategorized entries come first");
-      Assert.True(input < source && source < output, "Input section holds Source and precedes Output");
-      Assert.True(output < quiet, "Output section holds Quiet");
-      Assert.Equal(string.Empty, lines[output - 1]);
+      (connections < input).ShouldBeTrue("uncategorized entries come first");
+      (input < source && source < output).ShouldBeTrue("Input section holds Source and precedes Output");
+      (output < quiet).ShouldBeTrue("Output section holds Quiet");
+      lines[output - 1].ShouldBe(string.Empty);
    }
 
    [Fact]
    public void AliasesAreListedAndParsed() {
       var parser = new CommandLineParser<Args>();
 
-      Assert.Contains("--Source, --src, -s <string>", parser.GetConsoleFormattedHelpTexts(100));
-      Assert.Equal(["src", "s"], parser.GetHelpEntries().Single(e => e.Name == "Source").Aliases);
-      Assert.Equal("x", parser.Parse(["-c", "1", "--src", "x"]).Source);
-      Assert.Equal("y", parser.Parse(["-c", "1", "-s", "y"]).Source);
+      parser.GetConsoleFormattedHelpTexts(100).ShouldContain("--Source, --src, -s <string>", Case.Sensitive);
+      parser.GetHelpEntries().Single(e => e.Name == "Source").Aliases.ShouldBe(["src", "s"]);
+      parser.Parse(["-c", "1", "--src", "x"]).Source.ShouldBe("x");
+      parser.Parse(["-c", "1", "-s", "y"]).Source.ShouldBe("y");
    }
 
    [Fact]
    public void AliasClashIsAProgrammingError() {
-      Assert.Throws<InvalidOperationException>(() => new CommandLineParser<AliasClash>().Parse([]));
+      Should.Throw<InvalidOperationException>(() => new CommandLineParser<AliasClash>().Parse([]));
    }
 
    [Fact]
    public void GroupIsMentionedInHelp() {
       var parser = new CommandLineParser<Args>();
 
-      Assert.Contains("(group: mode)", parser.GetConsoleFormattedHelpTexts(100));
-      Assert.Equal("mode", parser.GetHelpEntries().Single(e => e.Name == "Fast").ExclusiveGroup);
+      parser.GetConsoleFormattedHelpTexts(100).ShouldContain("(group: mode)", Case.Sensitive);
+      parser.GetHelpEntries().Single(e => e.Name == "Fast").ExclusiveGroup.ShouldBe("mode");
    }
 
    [Fact]
    public void UsageLineListsRequiredArgumentsAndDefaultArgument() {
-      Assert.Equal("tool [options] --Connections <int> [<Files>...]", new CommandLineParser<Args>().GetUsage("tool"));
-      Assert.Equal("tool --Count <int> --Force <Target>", new CommandLineParser<RequiredOnly>().GetUsage("tool"));
+      new CommandLineParser<Args>().GetUsage("tool").ShouldBe("tool [options] --Connections <int> [<Files>...]");
+      new CommandLineParser<RequiredOnly>().GetUsage("tool").ShouldBe("tool --Count <int> --Force <Target>");
    }
 
    [Fact]
@@ -112,26 +111,26 @@ public class HelpPolishTests {
       var help = parser.GetConsoleFormattedHelpTexts("tool", 100);
       var lines = help.Split(Environment.NewLine);
 
-      Assert.Equal("Counts things in files.", parser.Description);
-      Assert.Equal("Counts things in files.", lines[0]);
-      Assert.Equal(string.Empty, lines[1]);
-      Assert.Equal("Usage: tool [options] --Connections <int> [<Files>...]", lines[2]);
-      Assert.Equal(string.Empty, lines[3]);
-      Assert.Contains(lines, l => l.Contains("--Connections <int>"));
+      parser.Description.ShouldBe("Counts things in files.");
+      lines[0].ShouldBe("Counts things in files.");
+      lines[1].ShouldBe(string.Empty);
+      lines[2].ShouldBe("Usage: tool [options] --Connections <int> [<Files>...]");
+      lines[3].ShouldBe(string.Empty);
+      lines.ShouldContain(l => l.Contains("--Connections <int>"));
    }
 
    [Fact]
    public void FullHelpWithoutDescriptionStartsWithUsage() {
       var parser = new CommandLineParser<RequiredOnly>();
 
-      Assert.Null(parser.Description);
-      Assert.StartsWith("Usage: tool", parser.GetConsoleFormattedHelpTexts("tool", 100));
+      parser.Description.ShouldBeNull();
+      parser.GetConsoleFormattedHelpTexts("tool", 100).ShouldStartWith("Usage: tool", Case.Sensitive);
    }
 
    [Fact]
    public void FullHelpWrapsALongDescription() {
       var help = new CommandLineParser<Args>().GetConsoleFormattedHelpTexts("tool", 20);
 
-      Assert.All(help.Split(Environment.NewLine).TakeWhile(l => l.Length > 0), l => Assert.True(l.Length <= 24, l));
+      help.Split(Environment.NewLine).TakeWhile(l => l.Length > 0).ShouldAllBe(l => l.Length <= 24);
    }
 }

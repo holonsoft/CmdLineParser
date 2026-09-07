@@ -1,11 +1,10 @@
 using holonsoft.CmdLineParser.Abstractions;
 using holonsoft.CmdLineParser.Abstractions.Enums;
-using Xunit;
 
 namespace holonsoft.CmdLineParser.Tests;
 
-public class DictionaryTests {
-   public class Args {
+public sealed class DictionaryTests {
+   public sealed class Args {
       [Argument(ArgumentTypes.AtMostOnce, ShortName = "D", HelpText = "Properties.")]
       public Dictionary<string, string> Properties = new();
 
@@ -19,19 +18,19 @@ public class DictionaryTests {
       public Dictionary<string, TypeConversionTests.ByteEnum>? Enums;
    }
 
-   public class SharedInstance {
+   public sealed class SharedInstance {
       public static readonly Dictionary<string, string> Shared = new();
 
       [Argument(ArgumentTypes.AtMostOnce)]
       public Dictionary<string, string> Props { get; set; } = Shared;
    }
 
-   public class IntKeys {
+   public sealed class IntKeys {
       [Argument(ArgumentTypes.AtMostOnce)]
       public Dictionary<int, string>? Map;
    }
 
-   public class InterfaceMember {
+   public sealed class InterfaceMember {
       [Argument(ArgumentTypes.AtMostOnce)]
       public IDictionary<string, string>? Map;
    }
@@ -42,26 +41,26 @@ public class DictionaryTests {
    public void SeveralPairsAfterOneOption() {
       var result = Parse("-D", "a=1", "b=2");
 
-      Assert.Empty(result.Errors);
-      Assert.Equal(2, result.Value.Properties.Count);
-      Assert.Equal("1", result.Value.Properties["a"]);
-      Assert.Equal("2", result.Value.Properties["b"]);
+      result.Errors.ShouldBeEmpty();
+      result.Value.Properties.Count.ShouldBe(2);
+      result.Value.Properties["a"].ShouldBe("1");
+      result.Value.Properties["b"].ShouldBe("2");
    }
 
    [Fact]
    public void InlineAndRepeatedOccurrencesWithTypedValues() {
       var result = Parse("-n:x=1", "-n", "y=2", "--Numbers=z=3");
 
-      Assert.Empty(result.Errors);
-      Assert.Equal(new Dictionary<string, int> { ["x"] = 1, ["y"] = 2, ["z"] = 3 }, result.Value.Numbers);
+      result.Errors.ShouldBeEmpty();
+      result.Value.Numbers.ShouldBe(new Dictionary<string, int> { ["x"] = 1, ["y"] = 2, ["z"] = 3 }, ignoreOrder: true);
    }
 
    [Fact]
    public void NullDictionaryIsCreated() {
       var result = Parse("-e", "a=One");
 
-      Assert.Empty(result.Errors);
-      Assert.Equal(TypeConversionTests.ByteEnum.One, result.Value.Enums!["a"]);
+      result.Errors.ShouldBeEmpty();
+      result.Value.Enums!["a"].ShouldBe(TypeConversionTests.ByteEnum.One);
    }
 
    [Fact]
@@ -70,17 +69,17 @@ public class DictionaryTests {
 
       var result = new CommandLineParser<SharedInstance>().ParseArguments(["-Props", "k=v"]);
 
-      Assert.Empty(result.Errors);
-      Assert.Same(SharedInstance.Shared, result.Value.Props);
-      Assert.Equal("v", SharedInstance.Shared["k"]);
+      result.Errors.ShouldBeEmpty();
+      result.Value.Props.ShouldBeSameAs(SharedInstance.Shared);
+      SharedInstance.Shared["k"].ShouldBe("v");
    }
 
    [Fact]
    public void AtMostOnceDictionaryGivenTwiceIsDuplicate() {
       var result = Parse("-D", "a=1", "-D", "b=2");
 
-      var error = Assert.Single(result.Errors);
-      Assert.Equal(ParserErrorKinds.DuplicateArgument, error.Kind);
+      var error = result.Errors.ShouldHaveSingleItem();
+      error.Kind.ShouldBe(ParserErrorKinds.DuplicateArgument);
    }
 
    [Theory]
@@ -89,67 +88,67 @@ public class DictionaryTests {
    public void PairWithoutKeyOrSeparatorIsInvalid(string pair) {
       var result = Parse("-D", pair);
 
-      var error = Assert.Single(result.Errors);
-      Assert.Equal(ParserErrorKinds.InvalidValue, error.Kind);
-      Assert.Equal(pair, error.Value);
-      Assert.Contains("key=value", error.Message);
-      Assert.Empty(result.Value.Properties);
+      var error = result.Errors.ShouldHaveSingleItem();
+      error.Kind.ShouldBe(ParserErrorKinds.InvalidValue);
+      error.Value.ShouldBe(pair);
+      error.Message.ShouldContain("key=value", Case.Sensitive);
+      result.Value.Properties.ShouldBeEmpty();
    }
 
    [Fact]
    public void ValueConversionErrorLeavesDictionaryUntouched() {
       var result = Parse("-n", "x=abc", "y=2");
 
-      var error = Assert.Single(result.Errors);
-      Assert.Equal(ParserErrorKinds.InvalidValue, error.Kind);
-      Assert.Null(result.Value.Numbers);
+      var error = result.Errors.ShouldHaveSingleItem();
+      error.Kind.ShouldBe(ParserErrorKinds.InvalidValue);
+      result.Value.Numbers.ShouldBeNull();
    }
 
    [Fact]
    public void DuplicateKeysLastWinsWithoutUnique() {
       var result = Parse("-D", "a=1", "a=2");
 
-      Assert.Empty(result.Errors);
-      Assert.Equal("2", result.Value.Properties["a"]);
+      result.Errors.ShouldBeEmpty();
+      result.Value.Properties["a"].ShouldBe("2");
    }
 
    [Fact]
    public void UniqueRejectsDuplicateKeys() {
       var result = Parse("-u", "a=1", "-u", "a=2");
 
-      var error = Assert.Single(result.Errors);
-      Assert.Equal(ParserErrorKinds.CollectionValuesAreNotUnique, error.Kind);
-      Assert.Null(result.Value.Unique);
+      var error = result.Errors.ShouldHaveSingleItem();
+      error.Kind.ShouldBe(ParserErrorKinds.CollectionValuesAreNotUnique);
+      result.Value.Unique.ShouldBeNull();
    }
 
    [Fact]
    public void ValueMayContainEqualsAndKeysAreTrimmed() {
       var result = Parse("-D", "conn=a=b", " key =v");
 
-      Assert.Empty(result.Errors);
-      Assert.Equal("a=b", result.Value.Properties["conn"]);
-      Assert.Equal("v", result.Value.Properties["key"]);
+      result.Errors.ShouldBeEmpty();
+      result.Value.Properties["conn"].ShouldBe("a=b");
+      result.Value.Properties["key"].ShouldBe("v");
    }
 
    [Fact]
    public void EmptyValueIsAllowed() {
       var result = Parse("-D", "a=");
 
-      Assert.Empty(result.Errors);
-      Assert.Equal(string.Empty, result.Value.Properties["a"]);
+      result.Errors.ShouldBeEmpty();
+      result.Value.Properties["a"].ShouldBe(string.Empty);
    }
 
    [Fact]
    public void MissingPairsIsMissingValue() {
       var result = Parse("-D");
 
-      Assert.Equal(ParserErrorKinds.MissingValue, Assert.Single(result.Errors).Kind);
+      result.Errors.ShouldHaveSingleItem().Kind.ShouldBe(ParserErrorKinds.MissingValue);
    }
 
    [Fact]
    public void OnlyStringKeyedConcreteDictionariesAreSupported() {
-      Assert.Throws<NotSupportedException>(() => new CommandLineParser<IntKeys>().Parse([]));
-      Assert.Throws<NotSupportedException>(() => new CommandLineParser<InterfaceMember>().Parse([]));
+      Should.Throw<NotSupportedException>(() => new CommandLineParser<IntKeys>().Parse([]));
+      Should.Throw<NotSupportedException>(() => new CommandLineParser<InterfaceMember>().Parse([]));
    }
 
    [Fact]
@@ -157,8 +156,8 @@ public class DictionaryTests {
       var parser = new CommandLineParser<Args>();
 
       var entry = parser.GetHelpEntries().Single(e => e.Name == "Properties");
-      Assert.True(entry.IsCollection);
-      Assert.Equal("string", entry.TypeDisplayName);
-      Assert.Contains("-D, --Properties <string>...", parser.GetConsoleFormattedHelpTexts(100));
+      entry.IsCollection.ShouldBeTrue();
+      entry.TypeDisplayName.ShouldBe("string");
+      parser.GetConsoleFormattedHelpTexts(100).ShouldContain("-D, --Properties <string>...", Case.Sensitive);
    }
 }

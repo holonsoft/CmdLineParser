@@ -1,16 +1,15 @@
 using holonsoft.CmdLineParser.Abstractions;
 using holonsoft.CmdLineParser.Abstractions.Enums;
-using Xunit;
 
 namespace holonsoft.CmdLineParser.Tests;
 
-public class HelpTests {
+public sealed class HelpTests {
    public enum Mode {
       Fast,
       Safe,
    }
 
-   public class Args {
+   public sealed class Args {
       [Argument(ArgumentTypes.Required, ShortName = "c", HelpText = "Number of connections to open when the program starts, must be positive and should not exceed the pool size.")]
       public int Connections;
 
@@ -30,7 +29,7 @@ public class HelpTests {
       public string? NoHelpText;
    }
 
-   public class ArgsWithOwnHelp {
+   public sealed class ArgsWithOwnHelp {
       [Argument(ArgumentTypes.AtMostOnce, ShortName = "h")]
       public int Height;
 
@@ -42,23 +41,23 @@ public class HelpTests {
    public void EntriesAreSortedByNameAndCarryMetadata() {
       var entries = new CommandLineParser<Args>().GetHelpEntries();
 
-      Assert.Equal(["Connections", "Files", "Mode", "NoHelpText", "Verbose", "Version"], entries.Select(e => e.Name));
+      entries.Select(e => e.Name).ShouldBe(["Connections", "Files", "Mode", "NoHelpText", "Verbose", "Version"]);
 
       var connections = entries.Single(e => e.Name == "Connections");
-      Assert.True(connections.IsRequired);
-      Assert.Equal("c", connections.ShortName);
-      Assert.Equal("int", connections.TypeDisplayName);
+      connections.IsRequired.ShouldBeTrue();
+      connections.ShortName.ShouldBe("c");
+      connections.TypeDisplayName.ShouldBe("int");
 
       var mode = entries.Single(e => e.Name == "Mode");
-      Assert.Equal("run-mode", mode.LongName);
-      Assert.Equal("Fast|Safe", mode.TypeDisplayName);
-      Assert.Equal(Mode.Safe, mode.DefaultValue);
+      mode.LongName.ShouldBe("run-mode");
+      mode.TypeDisplayName.ShouldBe("Fast|Safe");
+      mode.DefaultValue.ShouldBe(Mode.Safe);
 
       var files = entries.Single(e => e.Name == "Files");
-      Assert.True(files.IsDefaultArgument);
-      Assert.True(files.IsCollection);
+      files.IsDefaultArgument.ShouldBeTrue();
+      files.IsCollection.ShouldBeTrue();
 
-      Assert.True(entries.Single(e => e.Name == "Version").IsExclusive);
+      entries.Single(e => e.Name == "Version").IsExclusive.ShouldBeTrue();
    }
 
    [Fact]
@@ -66,25 +65,25 @@ public class HelpTests {
       var texts = new CommandLineParser<Args>().GetHelpTexts().ToList();
 
       var noHelp = texts.Single(t => t.FieldName == "NoHelpText");
-      Assert.Equal(string.Empty, noHelp.ShortName);
-      Assert.Equal(string.Empty, noHelp.LongName);
-      Assert.Equal(string.Empty, noHelp.HelpText);
+      noHelp.ShortName.ShouldBe(string.Empty);
+      noHelp.LongName.ShouldBe(string.Empty);
+      noHelp.HelpText.ShouldBe(string.Empty);
    }
 
    [Fact]
    public void FormattedHelpContainsNamesTypesAndMarkers() {
       var help = new CommandLineParser<Args>().GetConsoleFormattedHelpTexts(100);
 
-      Assert.Contains("-c, --Connections <int>", help);
-      Assert.Contains("(required)", help);
-      Assert.Contains("-m, --run-mode <Fast|Safe>", help);
-      Assert.Contains("Default: Safe", help);
-      Assert.Contains("-v, --Verbose ", help);
-      Assert.DoesNotContain("--Verbose <", help);
-      Assert.Contains("(exclusive)", help);
-      Assert.Contains("--Files <string>...", help);
-      Assert.Contains("(default argument", help);
-      Assert.Contains("--NoHelpText <string>", help);
+      help.ShouldContain("-c, --Connections <int>", Case.Sensitive);
+      help.ShouldContain("(required)", Case.Sensitive);
+      help.ShouldContain("-m, --run-mode <Fast|Safe>", Case.Sensitive);
+      help.ShouldContain("Default: Safe", Case.Sensitive);
+      help.ShouldContain("-v, --Verbose ", Case.Sensitive);
+      help.ShouldNotContain("--Verbose <", Case.Sensitive);
+      help.ShouldContain("(exclusive)", Case.Sensitive);
+      help.ShouldContain("--Files <string>...", Case.Sensitive);
+      help.ShouldContain("(default argument", Case.Sensitive);
+      help.ShouldContain("--NoHelpText <string>", Case.Sensitive);
    }
 
    [Fact]
@@ -93,26 +92,26 @@ public class HelpTests {
       var help = new CommandLineParser<Args>().GetConsoleFormattedHelpTexts(width);
 
       var lines = help.Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries);
-      Assert.All(lines, line => Assert.True(line.Length <= width, $"Line too long: '{line}'"));
-      Assert.Contains(lines, line => line.Contains("pool size"));
-      Assert.True(lines.Length > 6, "long help text should wrap into continuation lines");
+      lines.ShouldAllBe(line => line.Length <= width);
+      lines.ShouldContain(line => line.Contains("pool size"));
+      (lines.Length > 6).ShouldBeTrue("long help text should wrap into continuation lines");
    }
 
    [Fact]
    public void FormattedHelpTreatsTinyWidthsAsTwenty() {
       var help = new CommandLineParser<Args>().GetConsoleFormattedHelpTexts(5);
 
-      Assert.NotEmpty(help);
-      Assert.Throws<ArgumentOutOfRangeException>(() => new CommandLineParser<Args>().GetConsoleFormattedHelpTexts(0));
+      help.ShouldNotBeEmpty();
+      Should.Throw<ArgumentOutOfRangeException>(() => new CommandLineParser<Args>().GetConsoleFormattedHelpTexts(0));
    }
 
    [Fact]
    public void WrapSplitsAtWordBoundaries() {
       var lines = CommandLineParser<Args>.Wrap("aaa bbb ccc ddd", 7);
 
-      Assert.Equal(["aaa bbb", "ccc ddd"], lines);
-      Assert.Empty(CommandLineParser<Args>.Wrap("   ", 7));
-      Assert.Equal(["averyveryverylongword", "x"], CommandLineParser<Args>.Wrap("averyveryverylongword x", 5));
+      lines.ShouldBe(["aaa bbb", "ccc ddd"]);
+      CommandLineParser<Args>.Wrap("   ", 7).ShouldBeEmpty();
+      CommandLineParser<Args>.Wrap("averyveryverylongword x", 5).ShouldBe(["averyveryverylongword", "x"]);
    }
 
    [Theory]
@@ -123,17 +122,17 @@ public class HelpTests {
    public void BuiltInHelpSuppressesMissingRequiredErrors(string helpArgument) {
       var result = new CommandLineParser<Args>(new CommandLineParserOptions { AllowSlashPrefix = true }).ParseArguments([helpArgument]);
 
-      Assert.True(result.HelpRequested);
-      Assert.Empty(result.Errors);
+      result.HelpRequested.ShouldBeTrue();
+      result.Errors.ShouldBeEmpty();
    }
 
    [Fact]
    public void UserDefinedNameWinsOverBuiltInHelp() {
       var result = new CommandLineParser<ArgsWithOwnHelp>().ParseArguments(["-h", "5", "-Width", "1"]);
 
-      Assert.False(result.HelpRequested);
-      Assert.Empty(result.Errors);
-      Assert.Equal(5, result.Value.Height);
+      result.HelpRequested.ShouldBeFalse();
+      result.Errors.ShouldBeEmpty();
+      result.Value.Height.ShouldBe(5);
    }
 
    [Fact]
@@ -142,15 +141,15 @@ public class HelpTests {
 
       var result = parser.ParseArguments(["--help"]);
 
-      Assert.False(result.HelpRequested);
-      Assert.Contains(result.Errors, e => e.Kind == ParserErrorKinds.UnknownArgument && e.ArgumentName == "help");
+      result.HelpRequested.ShouldBeFalse();
+      result.Errors.ShouldContain(e => e.Kind == ParserErrorKinds.UnknownArgument && e.ArgumentName == "help");
    }
 
    [Fact]
    public void HelpNamesAreConfigurable() {
       var parser = new CommandLineParser<Args>(new CommandLineParserOptions { HelpArgumentNames = ["hilfe"] });
 
-      Assert.True(parser.ParseArguments(["--hilfe"]).HelpRequested);
-      Assert.False(parser.ParseArguments(["--help"]).HelpRequested);
+      parser.ParseArguments(["--hilfe"]).HelpRequested.ShouldBeTrue();
+      parser.ParseArguments(["--help"]).HelpRequested.ShouldBeFalse();
    }
 }

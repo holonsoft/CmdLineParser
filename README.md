@@ -285,7 +285,7 @@ Breaking changes in 5.0:
 
 ## Tests
 
-Unit tests use [xUnit.net](https://github.com/xunit/xunit) v3 on Microsoft.Testing.Platform and run on all three target frameworks. The suite includes a fuzz test that feeds random token sequences to every parser and asserts that user input never causes an exception, only reported errors.
+Unit tests use [xUnit.net](https://github.com/xunit/xunit) v3 on Microsoft.Testing.Platform with [Shouldly](https://github.com/shouldly/shouldly) assertions and run on all three target frameworks. The suite includes a fuzz test that feeds random token sequences to every parser and asserts that user input never causes an exception, only reported errors.
 
 ```text
 dotnet test

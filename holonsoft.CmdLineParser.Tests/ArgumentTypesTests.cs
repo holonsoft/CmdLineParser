@@ -1,11 +1,10 @@
 using holonsoft.CmdLineParser.Abstractions;
 using holonsoft.CmdLineParser.Abstractions.Enums;
-using Xunit;
 
 namespace holonsoft.CmdLineParser.Tests;
 
-public class ArgumentTypesTests {
-   public class Args {
+public sealed class ArgumentTypesTests {
+   public sealed class Args {
       [Argument(ArgumentTypes.Required, ShortName = "r")]
       public int Required;
 
@@ -37,102 +36,102 @@ public class ArgumentTypesTests {
    public void RequiredMissingIsReportedExactlyOnce() {
       var result = Parse("-o", "1");
 
-      var error = Assert.Single(result.Errors);
-      Assert.Equal(ParserErrorKinds.MissingArgument, error.Kind);
-      Assert.Equal("Required", error.ArgumentName);
+      var error = result.Errors.ShouldHaveSingleItem();
+      error.Kind.ShouldBe(ParserErrorKinds.MissingArgument);
+      error.ArgumentName.ShouldBe("Required");
    }
 
    [Fact]
    public void RequiredMissingIsReportedForEmptyArguments() {
       var result = Parse();
 
-      var error = Assert.Single(result.Errors);
-      Assert.Equal(ParserErrorKinds.MissingArgument, error.Kind);
+      var error = result.Errors.ShouldHaveSingleItem();
+      error.Kind.ShouldBe(ParserErrorKinds.MissingArgument);
    }
 
    [Fact]
    public void AtMostOnceScalarGivenTwiceIsDuplicate() {
       var result = Parse("-r", "1", "-o", "1", "-o", "2");
 
-      var error = Assert.Single(result.Errors);
-      Assert.Equal(ParserErrorKinds.DuplicateArgument, error.Kind);
-      Assert.Equal("o", error.ArgumentName);
-      Assert.Equal(1, result.Value.Once);
+      var error = result.Errors.ShouldHaveSingleItem();
+      error.Kind.ShouldBe(ParserErrorKinds.DuplicateArgument);
+      error.ArgumentName.ShouldBe("o");
+      result.Value.Once.ShouldBe(1);
    }
 
    [Fact]
    public void LastOccurrenceWinsTakesLastValue() {
       var result = Parse("-r", "1", "-l", "1", "-l", "2", "--Last", "3");
 
-      Assert.Empty(result.Errors);
-      Assert.Equal(3, result.Value.Last);
+      result.Errors.ShouldBeEmpty();
+      result.Value.Last.ShouldBe(3);
    }
 
    [Fact]
    public void UniqueOnScalarBehavesLikeAtMostOnce() {
       var ok = Parse("-r", "1", "-u", "5");
-      Assert.Empty(ok.Errors);
-      Assert.Equal(5, ok.Value.UniqueScalar);
+      ok.Errors.ShouldBeEmpty();
+      ok.Value.UniqueScalar.ShouldBe(5);
 
       var duplicate = Parse("-r", "1", "-u", "5", "-u", "6");
-      Assert.Contains(duplicate.Errors, e => e.Kind == ParserErrorKinds.DuplicateArgument);
+      duplicate.Errors.ShouldContain(e => e.Kind == ParserErrorKinds.DuplicateArgument);
    }
 
    [Fact]
    public void MultipleCollectionGathersAllOccurrencesAndAllowsDuplicates() {
       var result = Parse("-r", "1", "-m", "a", "b", "-m", "a");
 
-      Assert.Empty(result.Errors);
-      Assert.Equal(["a", "b", "a"], result.Value.Multiple!);
+      result.Errors.ShouldBeEmpty();
+      result.Value.Multiple!.ShouldBe(["a", "b", "a"]);
    }
 
    [Fact]
    public void MultipleUniqueCollectionRejectsDuplicateValues() {
       var result = Parse("-r", "1", "-mu", "a", "-mu", "a");
 
-      var error = Assert.Single(result.Errors);
-      Assert.Equal(ParserErrorKinds.CollectionValuesAreNotUnique, error.Kind);
-      Assert.Null(result.Value.MultipleUnique);
+      var error = result.Errors.ShouldHaveSingleItem();
+      error.Kind.ShouldBe(ParserErrorKinds.CollectionValuesAreNotUnique);
+      result.Value.MultipleUnique.ShouldBeNull();
    }
 
    [Fact]
    public void MultipleUniqueCollectionAcceptsDistinctValuesOverSeveralOccurrences() {
       var result = Parse("-r", "1", "-mu", "a", "b", "-mu", "c");
 
-      Assert.Empty(result.Errors);
-      Assert.Equal(["a", "b", "c"], result.Value.MultipleUnique!);
+      result.Errors.ShouldBeEmpty();
+      result.Value.MultipleUnique!.ShouldBe(["a", "b", "c"]);
    }
 
    [Fact]
    public void AtMostOnceCollectionGivenTwiceIsDuplicate() {
       var result = Parse("-r", "1", "-c", "a", "-c", "b");
 
-      var error = Assert.Single(result.Errors);
-      Assert.Equal(ParserErrorKinds.DuplicateArgument, error.Kind);
-      Assert.Equal(["a", "b"], result.Value.CollectionOnce!);
+      var error = result.Errors.ShouldHaveSingleItem();
+      error.Kind.ShouldBe(ParserErrorKinds.DuplicateArgument);
+      result.Value.CollectionOnce!.ShouldBe(["a", "b"]);
    }
 
    [Fact]
    public void ExclusiveAloneSkipsRequiredCheck() {
       var result = Parse("-v");
 
-      Assert.Empty(result.Errors);
-      Assert.True(result.Value.Version);
+      result.Errors.ShouldBeEmpty();
+      result.Value.Version.ShouldBeTrue();
    }
 
    [Fact]
    public void ExclusiveCombinedWithOtherArgumentIsConflict() {
       var result = Parse("-v", "-o", "1");
 
-      var error = Assert.Single(result.Errors);
-      Assert.Equal(ParserErrorKinds.ExclusiveArgumentConflict, error.Kind);
-      Assert.Equal("Version", error.ArgumentName);
+      var error = result.Errors.ShouldHaveSingleItem();
+      error.Kind.ShouldBe(ParserErrorKinds.ExclusiveArgumentConflict);
+      error.ArgumentName.ShouldBe("Version");
    }
 
    [Fact]
    public void ObsoleteMisspelledAliasStillWorks() {
 #pragma warning disable CS0618
-      Assert.Equal(ArgumentTypes.LastOccurrenceWins, ArgumentTypes.LastOccurenceWins);
+      ArgumentTypes.LastOccurenceWins.ShouldBe(ArgumentTypes.LastOccurrenceWins);
 #pragma warning restore CS0618
    }
 }

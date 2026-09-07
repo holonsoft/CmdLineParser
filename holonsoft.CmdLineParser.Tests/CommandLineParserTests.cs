@@ -3,14 +3,13 @@ using System.Net;
 using holonsoft.CmdLineParser.Abstractions.Enums;
 using holonsoft.CmdLineParser.Tests.Dtos;
 using holonsoft.CmdLineParser.Tests.Enums;
-using Xunit;
 
 namespace holonsoft.CmdLineParser.Tests;
 
 /// <summary>
 /// The scenarios of the original test suite, kept as regression guard for the 5.0 rewrite.
 /// </summary>
-public class CommandLineParserTests {
+public sealed class CommandLineParserTests {
    /// <summary>
    /// The original suite mixes '-' and '/' prefixes, so the slash prefix is enabled explicitly. It is off by default on
    /// Unix-like systems.
@@ -66,9 +65,9 @@ public class CommandLineParserTests {
 
       var result = parser.ParseArguments(Args1);
 
-      Assert.True(result.HelpRequested);
-      Assert.All(result.Errors, e => Assert.Equal(ParserErrorKinds.UnknownArgument, e.Kind));
-      Assert.Equal(2, result.Errors.Count);
+      result.HelpRequested.ShouldBeTrue();
+      result.Errors.ShouldAllBe(e => e.Kind == ParserErrorKinds.UnknownArgument);
+      result.Errors.Count.ShouldBe(2);
    }
 
    [Fact]
@@ -77,9 +76,9 @@ public class CommandLineParserTests {
 
       var result = parser.ParseArguments(Args2);
 
-      Assert.True(result.HasErrors);
-      Assert.True(result.HelpRequested);
-      Assert.All(result.Errors, e => Assert.Equal(ParserErrorKinds.UnknownArgument, e.Kind));
+      result.HasErrors.ShouldBeTrue();
+      result.HelpRequested.ShouldBeTrue();
+      result.Errors.ShouldAllBe(e => e.Kind == ParserErrorKinds.UnknownArgument);
    }
 
    [Fact]
@@ -88,9 +87,9 @@ public class CommandLineParserTests {
 
       var result = parser.Parse([]);
 
-      Assert.IsType<ArgExample1>(result);
-      Assert.Equal(17, result.MaxErrorsBeforeStop);
-      Assert.True(result.Lines);
+      result.ShouldBeOfType<ArgExample1>();
+      result.MaxErrorsBeforeStop.ShouldBe(17);
+      result.Lines.ShouldBeTrue();
    }
 
    [Fact]
@@ -100,15 +99,15 @@ public class CommandLineParserTests {
 
       var result = parser.Parse(Args3, (kind, hint) => reported.Add((kind, hint)));
 
-      Assert.Equal(3, result.StartConnections);
-      Assert.Equal(5, result.MaxConnections);
-      Assert.Equal(17, result.MaxErrorsBeforeStop);
-      Assert.Equal(@"{AppPath}\myconfig.xml", result.Configpath);
-      Assert.True(result.Lines);
+      result.StartConnections.ShouldBe(3);
+      result.MaxConnections.ShouldBe(5);
+      result.MaxErrorsBeforeStop.ShouldBe(17);
+      result.Configpath.ShouldBe(@"{AppPath}\myconfig.xml");
+      result.Lines.ShouldBeTrue();
 
-      var missing = Assert.Single(reported);
-      Assert.Equal(ParserErrorKinds.MissingArgument, missing.Kind);
-      Assert.Equal("IncrementOfConnections", missing.Hint);
+      var missing = reported.ShouldHaveSingleItem();
+      missing.Kind.ShouldBe(ParserErrorKinds.MissingArgument);
+      missing.Hint.ShouldBe("IncrementOfConnections");
    }
 
    [Fact]
@@ -117,10 +116,10 @@ public class CommandLineParserTests {
 
       var result = parser.Parse(Args4);
 
-      Assert.False(parser.HasErrors);
-      Assert.Equal(["File1", "File2", "File3"], result.Files!);
-      Assert.Equal([1, 3, 2], result.Priorities!);
-      Assert.Equal([true, true, false, false, true], result.ProcessPriorities!);
+      parser.HasErrors.ShouldBeFalse();
+      result.Files!.ShouldBe(["File1", "File2", "File3"]);
+      result.Priorities!.ShouldBe([1, 3, 2]);
+      result.ProcessPriorities!.ShouldBe([true, true, false, false, true]);
    }
 
    [Fact]
@@ -130,9 +129,9 @@ public class CommandLineParserTests {
 
       var result = parser.Parse(Args7, (kind, _) => kindOfError = kind);
 
-      Assert.True(parser.HasErrors);
-      Assert.Equal(ParserErrorKinds.CollectionValuesAreNotUnique, kindOfError);
-      Assert.Null(result.Files);
+      parser.HasErrors.ShouldBeTrue();
+      kindOfError.ShouldBe(ParserErrorKinds.CollectionValuesAreNotUnique);
+      result.Files.ShouldBeNull();
    }
 
    [Fact]
@@ -142,8 +141,8 @@ public class CommandLineParserTests {
 
       parser.Parse(Args8, (kind, _) => kindOfError = kind);
 
-      Assert.True(parser.HasErrors);
-      Assert.Equal(ParserErrorKinds.UnknownArgument, kindOfError);
+      parser.HasErrors.ShouldBeTrue();
+      kindOfError.ShouldBe(ParserErrorKinds.UnknownArgument);
    }
 
    [Fact]
@@ -152,8 +151,8 @@ public class CommandLineParserTests {
 
       var result = parser.Parse(Args9);
 
-      Assert.False(parser.HasErrors);
-      Assert.True(result.FlagWhenFound);
+      parser.HasErrors.ShouldBeFalse();
+      result.FlagWhenFound.ShouldBeTrue();
    }
 
    [Fact]
@@ -162,8 +161,8 @@ public class CommandLineParserTests {
 
       var result = parser.Parse(Args5);
 
-      Assert.False(parser.HasErrors);
-      Assert.NotEqual(Guid.Empty, result.ProgramId);
+      parser.HasErrors.ShouldBeFalse();
+      result.ProgramId.ShouldNotBe(Guid.Empty);
    }
 
    [Fact]
@@ -172,8 +171,8 @@ public class CommandLineParserTests {
 
       var result = parser.Parse(Args6);
 
-      Assert.False(parser.HasErrors);
-      Assert.Equal(RenameMode.ZipFiles, result.Mode);
+      parser.HasErrors.ShouldBeFalse();
+      result.Mode.ShouldBe(RenameMode.ZipFiles);
    }
 
    [Fact]
@@ -182,9 +181,9 @@ public class CommandLineParserTests {
 
       parser.Parse(Args6);
 
-      Assert.True(parser.HasErrors);
-      Assert.Contains(parser.Errors, e => e.Kind == ParserErrorKinds.MissingArgument);
-      Assert.Contains(parser.Errors, e => e.Kind == ParserErrorKinds.UnknownArgument);
+      parser.HasErrors.ShouldBeTrue();
+      parser.Errors.ShouldContain(e => e.Kind == ParserErrorKinds.MissingArgument);
+      parser.Errors.ShouldContain(e => e.Kind == ParserErrorKinds.UnknownArgument);
    }
 
    [Fact]
@@ -193,29 +192,29 @@ public class CommandLineParserTests {
 
       var result = parser.ParseArguments(Args99);
 
-      Assert.Empty(result.Errors);
+      result.Errors.ShouldBeEmpty();
 
       var value = result.Value;
-      Assert.Equal(1, value.Int16Field);
-      Assert.Equal(1, value.Int32Field);
-      Assert.Equal(1, value.Int64Field);
-      Assert.Equal((ushort) 1, value.UInt16Field);
-      Assert.Equal((uint) 1, value.UInt32Field);
-      Assert.Equal((ulong) 1, value.UInt64Field);
-      Assert.Equal(1.0m, value.DecimalField);
-      Assert.Equal(2.0f, value.SingleField);
-      Assert.Equal(3.0d, value.DoubleField);
-      Assert.Equal(DateTime.UtcNow.Date, value.DateTimeField);
-      Assert.True(value.BoolField);
-      Assert.Equal("A long journey", value.StringField);
-      Assert.Equal('A', value.CharField);
-      Assert.NotEqual(Guid.Empty, value.GuidField);
-      Assert.Equal(RenameMode.BakFiles, value.EnumField);
-      Assert.Equal(IPAddress.Parse("127.0.0.1"), value.IPAddressField);
-      Assert.Equal(new DateTime(2020, 4, 2), value.DateTimeFieldWithCultureInfo.Date);
-      Assert.Equal(3.14159d, value.DoubleFieldWithCultureInfo);
-      Assert.Equal((byte) 255, value.ByteField);
-      Assert.Equal((sbyte) -128, value.SByteField);
+      value.Int16Field.ShouldBe((short) 1);
+      value.Int32Field.ShouldBe(1);
+      value.Int64Field.ShouldBe(1);
+      value.UInt16Field.ShouldBe((ushort) 1);
+      value.UInt32Field.ShouldBe((uint) 1);
+      value.UInt64Field.ShouldBe((ulong) 1);
+      value.DecimalField.ShouldBe(1.0m);
+      value.SingleField.ShouldBe(2.0f);
+      value.DoubleField.ShouldBe(3.0d);
+      value.DateTimeField.ShouldBe(DateTime.UtcNow.Date);
+      value.BoolField.ShouldBeTrue();
+      value.StringField.ShouldBe("A long journey");
+      value.CharField.ShouldBe('A');
+      value.GuidField.ShouldNotBe(Guid.Empty);
+      value.EnumField.ShouldBe(RenameMode.BakFiles);
+      value.IPAddressField.ShouldBe(IPAddress.Parse("127.0.0.1"));
+      value.DateTimeFieldWithCultureInfo.Date.ShouldBe(new DateTime(2020, 4, 2));
+      value.DoubleFieldWithCultureInfo.ShouldBe(3.14159d);
+      value.ByteField.ShouldBe((byte) 255);
+      value.SByteField.ShouldBe((sbyte) -128);
    }
 
    [Fact]
@@ -224,32 +223,32 @@ public class CommandLineParserTests {
 
       var helpTexts = parser.GetHelpTexts().ToList();
 
-      Assert.Equal(3, helpTexts.Count);
+      helpTexts.Count.ShouldBe(3);
    }
 
    [Fact]
    public void UnsupportedMemberTypeThrowsOnFirstUse() {
       var parser = new CommandLineParser<UnsupportedTypeArgs>(WithSlashPrefix);
 
-      Assert.Throws<NotSupportedException>(() => parser.Parse(["/Anything", "x"]));
+      Should.Throw<NotSupportedException>(() => parser.Parse(["/Anything", "x"]));
    }
 
    [Fact]
    public void ShortNameWithEveryPrefix() {
       var parser = new CommandLineParser<FlagArg>(WithSlashPrefix);
 
-      Assert.True(parser.Parse(Args10).FlagWhenFound);
-      Assert.True(parser.Parse(Args11).FlagWhenFound);
-      Assert.True(parser.Parse(Args12).FlagWhenFound);
+      parser.Parse(Args10).FlagWhenFound.ShouldBeTrue();
+      parser.Parse(Args11).FlagWhenFound.ShouldBeTrue();
+      parser.Parse(Args12).FlagWhenFound.ShouldBeTrue();
    }
 
    [Fact]
    public void MemberNameLongNameAndShortNameAddressTheSameField() {
       var parser = new CommandLineParser<DifferentFieldNameArg>(WithSlashPrefix);
 
-      Assert.Equal("Special_Out1.txt", parser.Parse(Args13).OutFileName);
-      Assert.Equal("Special_Out1.txt", parser.Parse(Args14).OutFileName);
-      Assert.Equal("Special_Out1.txt", parser.Parse(Args15).OutFileName);
+      parser.Parse(Args13).OutFileName.ShouldBe("Special_Out1.txt");
+      parser.Parse(Args14).OutFileName.ShouldBe("Special_Out1.txt");
+      parser.Parse(Args15).OutFileName.ShouldBe("Special_Out1.txt");
    }
 
    [Fact]
@@ -258,8 +257,8 @@ public class CommandLineParserTests {
 
       var result = parser.Parse(Args16);
 
-      Assert.Equal("default.outfile", result.OutFileName);
-      Assert.True(parser.HasErrors);
+      result.OutFileName.ShouldBe("default.outfile");
+      parser.HasErrors.ShouldBeTrue();
    }
 
    [Fact]
@@ -268,10 +267,10 @@ public class CommandLineParserTests {
 
       var result = parser.Parse(Args17);
 
-      Assert.False(parser.HasErrors);
-      Assert.True(result.Git);
-      Assert.True(result.MsBuild);
-      Assert.Equal(["P:/Dev/Base", "P:/Dev/Products"], result.RootDirectories!);
+      parser.HasErrors.ShouldBeFalse();
+      result.Git.ShouldBeTrue();
+      result.MsBuild.ShouldBeTrue();
+      result.RootDirectories!.ShouldBe(["P:/Dev/Base", "P:/Dev/Products"]);
    }
 
    [Fact]
@@ -280,9 +279,9 @@ public class CommandLineParserTests {
 
       var result = parser.Parse(Args18);
 
-      Assert.False(parser.HasErrors);
-      Assert.True(result.Git);
-      Assert.True(result.MsBuild);
-      Assert.Equal(["P:/Dev/Base", "P:/Dev/Products"], result.RootDirectories!);
+      parser.HasErrors.ShouldBeFalse();
+      result.Git.ShouldBeTrue();
+      result.MsBuild.ShouldBeTrue();
+      result.RootDirectories!.ShouldBe(["P:/Dev/Base", "P:/Dev/Products"]);
    }
 }

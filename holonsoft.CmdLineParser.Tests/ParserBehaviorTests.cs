@@ -1,11 +1,10 @@
 using holonsoft.CmdLineParser.Abstractions;
 using holonsoft.CmdLineParser.Abstractions.Enums;
-using Xunit;
 
 namespace holonsoft.CmdLineParser.Tests;
 
-public class ParserBehaviorTests {
-   public class Args {
+public sealed class ParserBehaviorTests {
+   public sealed class Args {
       [Argument(ArgumentTypes.AtMostOnce, ShortName = "n", DefaultValue = 1)]
       public int Number;
 
@@ -16,7 +15,7 @@ public class ParserBehaviorTests {
       public string[]? Items;
    }
 
-   public class DuplicateNames {
+   public sealed class DuplicateNames {
       [Argument(ArgumentTypes.AtMostOnce, ShortName = "x")]
       public int First;
 
@@ -24,7 +23,7 @@ public class ParserBehaviorTests {
       public int Second;
    }
 
-   public class CaseCollision {
+   public sealed class CaseCollision {
       [Argument(ArgumentTypes.AtMostOnce, ShortName = "v")]
       public bool Verbose;
 
@@ -32,7 +31,7 @@ public class ParserBehaviorTests {
       public bool Version;
    }
 
-   public class TwoDefaults {
+   public sealed class TwoDefaults {
       [DefaultArgument(ArgumentTypes.AtMostOnce)]
       public string? First;
 
@@ -40,7 +39,7 @@ public class ParserBehaviorTests {
       public string? Second;
    }
 
-   public class MultiDimensional {
+   public sealed class MultiDimensional {
       [Argument(ArgumentTypes.AtMostOnce)]
       public int[,]? Matrix;
    }
@@ -52,11 +51,11 @@ public class ParserBehaviorTests {
       var first = parser.Parse(["-n", "5", "-Text", "a", "-Items", "x"]);
       var second = parser.Parse([]);
 
-      Assert.NotSame(first, second);
-      Assert.Equal(5, first.Number);
-      Assert.Equal(1, second.Number);
-      Assert.Null(second.Text);
-      Assert.Null(second.Items);
+      second.ShouldNotBeSameAs(first);
+      first.Number.ShouldBe(5);
+      second.Number.ShouldBe(1);
+      second.Text.ShouldBeNull();
+      second.Items.ShouldBeNull();
    }
 
    [Fact]
@@ -72,15 +71,15 @@ public class ParserBehaviorTests {
          }
       });
 
-      Assert.Equal(0, failures);
+      failures.ShouldBe(0);
    }
 
    [Fact]
    public void NamesAreCaseSensitiveByDefault() {
       var result = new CommandLineParser<Args>().ParseArguments(["-number", "5"]);
 
-      var error = Assert.Single(result.Errors);
-      Assert.Equal(ParserErrorKinds.UnknownArgument, error.Kind);
+      var error = result.Errors.ShouldHaveSingleItem();
+      error.Kind.ShouldBe(ParserErrorKinds.UnknownArgument);
    }
 
    [Fact]
@@ -89,54 +88,54 @@ public class ParserBehaviorTests {
 
       var result = parser.ParseArguments(["-NUMBER", "5", "-N", "6"]);
 
-      Assert.Contains(result.Errors, e => e.Kind == ParserErrorKinds.DuplicateArgument);
-      Assert.Equal(5, result.Value.Number);
+      result.Errors.ShouldContain(e => e.Kind == ParserErrorKinds.DuplicateArgument);
+      result.Value.Number.ShouldBe(5);
    }
 
    [Fact]
    public void IgnoreCaseDetectsCollidingNames() {
       var parser = new CommandLineParser<CaseCollision>(new CommandLineParserOptions { IgnoreCase = true });
 
-      Assert.Throws<InvalidOperationException>(() => parser.Parse([]));
-      Assert.Empty(new CommandLineParser<CaseCollision>().ParseArguments(["-v", "-V"]).Errors);
+      Should.Throw<InvalidOperationException>(() => parser.Parse([]));
+      new CommandLineParser<CaseCollision>().ParseArguments(["-v", "-V"]).Errors.ShouldBeEmpty();
    }
 
    [Fact]
    public void DuplicateNamesAreAProgrammingError() {
-      var exception = Assert.Throws<InvalidOperationException>(() => new CommandLineParser<DuplicateNames>().Parse([]));
+      var exception = Should.Throw<InvalidOperationException>(() => new CommandLineParser<DuplicateNames>().Parse([]));
 
-      Assert.Contains("'x'", exception.Message);
+      exception.Message.ShouldContain("'x'", Case.Sensitive);
    }
 
    [Fact]
    public void TwoDefaultArgumentsAreAProgrammingError() {
-      Assert.Throws<InvalidOperationException>(() => new CommandLineParser<TwoDefaults>().Parse([]));
+      Should.Throw<InvalidOperationException>(() => new CommandLineParser<TwoDefaults>().Parse([]));
    }
 
    [Fact]
    public void MultiDimensionalArraysAreNotSupported() {
-      Assert.Throws<NotSupportedException>(() => new CommandLineParser<MultiDimensional>().Parse([]));
+      Should.Throw<NotSupportedException>(() => new CommandLineParser<MultiDimensional>().Parse([]));
    }
 
    [Fact]
    public void NullOptionsThrow() {
-      Assert.Throws<ArgumentNullException>(() => new CommandLineParser<Args>(null!));
+      Should.Throw<ArgumentNullException>(() => new CommandLineParser<Args>(null!));
    }
 
    [Fact]
    public void OptionsAreExposed() {
       var options = new CommandLineParserOptions { IgnoreCase = true };
 
-      Assert.Same(options, new CommandLineParser<Args>(options).Options);
+      new CommandLineParser<Args>(options).Options.ShouldBeSameAs(options);
    }
 
    [Fact]
    public void InlineAndSeparateValuesMix() {
       var result = new CommandLineParser<Args>().ParseArguments(["-n=5", "--Text:hello", "-Items:a", "b", "c"]);
 
-      Assert.Empty(result.Errors);
-      Assert.Equal(5, result.Value.Number);
-      Assert.Equal("hello", result.Value.Text);
-      Assert.Equal(["a", "b", "c"], result.Value.Items!);
+      result.Errors.ShouldBeEmpty();
+      result.Value.Number.ShouldBe(5);
+      result.Value.Text.ShouldBe("hello");
+      result.Value.Items!.ShouldBe(["a", "b", "c"]);
    }
 }

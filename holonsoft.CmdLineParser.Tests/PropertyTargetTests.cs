@@ -1,10 +1,9 @@
 using holonsoft.CmdLineParser.Abstractions;
-using Xunit;
 
 namespace holonsoft.CmdLineParser.Tests;
 
-public class PropertyTargetTests {
-   public class PropertyArgs {
+public sealed class PropertyTargetTests {
+   public sealed class PropertyArgs {
       [Argument(ArgumentTypes.Required, ShortName = "n")]
       public string Name { get; set; } = "";
 
@@ -20,7 +19,7 @@ public class PropertyTargetTests {
       public string NotAnArgument { get; set; } = "untouched";
    }
 
-   public record RecordArgs {
+   public sealed record RecordArgs {
       [Argument(ArgumentTypes.AtMostOnce)]
       public int Level { get; init; }
    }
@@ -30,22 +29,22 @@ public class PropertyTargetTests {
       public int Inherited { get; set; }
    }
 
-   public class DerivedArgs : BaseArgs {
+   public sealed class DerivedArgs : BaseArgs {
       [Argument(ArgumentTypes.AtMostOnce)]
       public int Own { get; set; }
    }
 
-   public class GetOnlyArgs {
+   public sealed class GetOnlyArgs {
       [Argument(ArgumentTypes.AtMostOnce)]
       public int Broken { get; }
    }
 
-   public class PrivateSetterArgs {
+   public sealed class PrivateSetterArgs {
       [Argument(ArgumentTypes.AtMostOnce)]
       public int Broken { get; private set; }
    }
 
-   public class ReadOnlyFieldArgs {
+   public sealed class ReadOnlyFieldArgs {
       [Argument(ArgumentTypes.AtMostOnce)]
       public readonly int Broken;
    }
@@ -54,43 +53,43 @@ public class PropertyTargetTests {
    public void PropertiesReceiveValues() {
       var result = new CommandLineParser<PropertyArgs>().ParseArguments(["-n", "test", "-c", "3", "-Verbose", "a.txt", "b.txt"]);
 
-      Assert.Empty(result.Errors);
-      Assert.Equal("test", result.Value.Name);
-      Assert.Equal(3, result.Value.Count);
-      Assert.True(result.Value.Verbose);
-      Assert.Equal(["a.txt", "b.txt"], result.Value.Files!);
-      Assert.Equal("untouched", result.Value.NotAnArgument);
+      result.Errors.ShouldBeEmpty();
+      result.Value.Name.ShouldBe("test");
+      result.Value.Count.ShouldBe(3);
+      result.Value.Verbose.ShouldBeTrue();
+      result.Value.Files!.ShouldBe(["a.txt", "b.txt"]);
+      result.Value.NotAnArgument.ShouldBe("untouched");
    }
 
    [Fact]
    public void RecordWithInitProperties() {
       var result = new CommandLineParser<RecordArgs>().ParseArguments(["-Level", "9"]);
 
-      Assert.Empty(result.Errors);
-      Assert.Equal(9, result.Value.Level);
+      result.Errors.ShouldBeEmpty();
+      result.Value.Level.ShouldBe(9);
    }
 
    [Fact]
    public void InheritedPropertiesAreArguments() {
       var result = new CommandLineParser<DerivedArgs>().ParseArguments(["-Inherited", "1", "-Own", "2"]);
 
-      Assert.Empty(result.Errors);
-      Assert.Equal(1, result.Value.Inherited);
-      Assert.Equal(2, result.Value.Own);
+      result.Errors.ShouldBeEmpty();
+      result.Value.Inherited.ShouldBe(1);
+      result.Value.Own.ShouldBe(2);
    }
 
    [Fact]
    public void GetOnlyPropertyIsAProgrammingError() {
-      Assert.Throws<InvalidOperationException>(() => new CommandLineParser<GetOnlyArgs>().Parse([]));
+      Should.Throw<InvalidOperationException>(() => new CommandLineParser<GetOnlyArgs>().Parse([]));
    }
 
    [Fact]
    public void PrivateSetterIsAProgrammingError() {
-      Assert.Throws<InvalidOperationException>(() => new CommandLineParser<PrivateSetterArgs>().Parse([]));
+      Should.Throw<InvalidOperationException>(() => new CommandLineParser<PrivateSetterArgs>().Parse([]));
    }
 
    [Fact]
    public void ReadOnlyFieldIsAProgrammingError() {
-      Assert.Throws<InvalidOperationException>(() => new CommandLineParser<ReadOnlyFieldArgs>().Parse([]));
+      Should.Throw<InvalidOperationException>(() => new CommandLineParser<ReadOnlyFieldArgs>().Parse([]));
    }
 }
